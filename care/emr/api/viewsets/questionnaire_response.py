@@ -44,8 +44,7 @@ class QuestionnaireResponseViewSet(EMRModelReadOnlyViewSet):
         else:
             obj = get_object_or_404(QuestionnaireResponse, self.kwargs["external_id"])
             patient = obj.patient
-            if obj.encounter:
-                encounter = obj.encounter
+            encounter = obj.encounter
         if encounter:
             allowed = AuthorizationController.call(
                 "can_view_clinical_data", self.request.user, patient
