@@ -49,10 +49,10 @@ class ScheduleViewSet(EMRModelViewSet):
     def perform_delete(self, instance):
         with Lock(f"booking:resource:{instance.resource.id}"), transaction.atomic():
             # Check if there are any tokens allocated for this schedule in the future
-            availability_ids = instance.availability_set.values_list("id", flat=True)
+            availabilities = instance.availability_set.all()
             has_future_bookings = TokenSlot.objects.filter(
                 resource=instance.resource,
-                availability_id__in=availability_ids,
+                availability_id__in=availabilities.values_list("id", flat=True),
                 start_datetime__gt=timezone.now(),
                 allocated__gt=0,
             ).exists()
@@ -60,6 +60,7 @@ class ScheduleViewSet(EMRModelViewSet):
                 raise ValidationError(
                     "Cannot delete schedule as there are future bookings associated with it"
                 )
+            availabilities.update(deleted=True)
             super().perform_delete(instance)
 
     def authorize_delete(self, instance):
