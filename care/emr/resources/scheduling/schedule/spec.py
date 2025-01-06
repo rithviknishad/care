@@ -21,10 +21,6 @@ class SlotTypeOptions(str, Enum):
     closed = "closed"
 
 
-class ResourceTypeOptions(str, Enum):
-    user = "user"
-
-
 class AvailabilityDateTimeSpec(EMRResource):
     day_of_week: int = Field(le=6)
     start_time: datetime.time

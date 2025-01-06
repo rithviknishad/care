@@ -1,5 +1,9 @@
+from typing import Literal
+
+from django.db import transaction
 from django_filters import CharFilter, DateFilter, FilterSet, UUIDFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from pydantic import BaseModel
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
@@ -7,19 +11,27 @@ from rest_framework.response import Response
 
 from care.emr.api.viewsets.base import (
     EMRBaseViewSet,
-    EMRDeleteMixin,
     EMRListMixin,
     EMRRetrieveMixin,
     EMRUpdateMixin,
 )
 from care.emr.models.scheduling import SchedulableUserResource, TokenBooking
 from care.emr.resources.scheduling.slot.spec import (
+    CANCELLED_STATUS_CHOICES,
+    BookingStatusChoices,
     TokenBookingReadSpec,
-    TokenBookingUpdateSpec,
+    TokenBookingWriteSpec,
 )
 from care.emr.resources.user.spec import UserSpec
 from care.facility.models import Facility, FacilityOrganizationUser
 from care.security.authorization import AuthorizationController
+from care.utils.lock import Lock
+
+
+class CancelBookingSpec(BaseModel):
+    reason: Literal[
+        BookingStatusChoices.cancelled, BookingStatusChoices.entered_in_error
+    ]
 
 
 class TokenBookingFilters(FilterSet):
@@ -40,13 +52,20 @@ class TokenBookingFilters(FilterSet):
         return queryset.filter(token_slot__resource=resource)
 
 
+def lock_cancel_appointment(token_booking):
+    token_slot = token_booking.token_slot
+    with Lock(f"booking:slot:{token_slot.id}"), transaction.atomic():
+        token_slot.allocated -= 1
+        token_slot.save()
+
+
 class TokenBookingViewSet(
-    EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRDeleteMixin, EMRBaseViewSet
+    EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
 ):
     database_model = TokenBooking
-    pydantic_model = TokenBookingReadSpec
+    pydantic_model = TokenBookingWriteSpec
     pydantic_read_model = TokenBookingReadSpec
-    pydantic_update_model = TokenBookingUpdateSpec
+    pydantic_update_model = TokenBookingWriteSpec
 
     filterset_class = TokenBookingFilters
     filter_backends = [DjangoFilterBackend]
@@ -57,10 +76,6 @@ class TokenBookingViewSet(
             Facility, external_id=self.kwargs["facility_external_id"]
         )
 
-    def authorize_delete(self, instance):
-        # TODO, need more depth to handle this case
-        pass
-
     def authorize_update(self, request_obj, model_instance):
         if not AuthorizationController.call(
             "can_write_user_booking",
@@ -68,7 +83,7 @@ class TokenBookingViewSet(
             model_instance.token_slot.resource.facility,
             model_instance.token_slot.resource.user,
         ):
-            raise PermissionDenied("You do not have permission to view user schedule")
+            raise PermissionDenied("You do not have permission to update bookings")
 
     def get_queryset(self):
         facility = self.get_facility_obj()
@@ -88,6 +103,29 @@ class TokenBookingViewSet(
             )
             .order_by("-modified_date")
         )
+
+    @classmethod
+    def cancel_appointment_handler(cls, instance, request_data, user):
+        request_data = CancelBookingSpec(**request_data)
+        if instance.status not in CANCELLED_STATUS_CHOICES:
+            # Free up the slot if it is not cancelled already
+            lock_cancel_appointment(instance)
+        instance.status = request_data.reason
+        instance.updated_by = user
+        instance.save()
+        return Response({"status": request_data.reason})
+
+    @action(detail=True, methods=["POST"])
+    def cancel(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not AuthorizationController.call(
+            "can_write_user_booking",
+            self.request.user,
+            instance.token_slot.resource.facility,
+            instance.token_slot.resource.user,
+        ):
+            raise PermissionDenied("You do not have permission to cancel bookings")
+        return self.cancel_appointment_handler(instance, request.data, request.user)
 
     @action(detail=False, methods=["GET"])
     def available_users(self, request, *args, **kwargs):
