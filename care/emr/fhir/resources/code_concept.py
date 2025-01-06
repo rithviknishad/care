@@ -23,9 +23,9 @@ class MinimalCodeConcept(BaseModel):
     display: str
     system: str
     code: str
+    designation: list | None = None
 
 
 class CodeConcept(MinimalCodeConcept):
     name: str
     property: dict
-    designation: dict
