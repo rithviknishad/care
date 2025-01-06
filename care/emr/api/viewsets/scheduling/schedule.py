@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 from django_filters import FilterSet, UUIDFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -6,6 +7,7 @@ from rest_framework.generics import get_object_or_404
 
 from care.emr.api.viewsets.base import EMRModelViewSet
 from care.emr.models.organization import FacilityOrganizationUser
+from care.emr.models.scheduling.booking import TokenSlot
 from care.emr.models.scheduling.schedule import Schedule
 from care.emr.resources.scheduling.schedule.spec import (
     ScheduleReadSpec,
@@ -15,6 +17,7 @@ from care.emr.resources.scheduling.schedule.spec import (
 from care.facility.models import Facility
 from care.security.authorization import AuthorizationController
 from care.users.models import User
+from care.utils.lock import Lock
 
 
 class ScheduleFilters(FilterSet):
@@ -42,6 +45,22 @@ class ScheduleViewSet(EMRModelViewSet):
                 availability_obj = availability.de_serialize()
                 availability_obj.schedule = instance
                 availability_obj.save()
+
+    def perform_delete(self, instance):
+        with Lock(f"booking:resource:{instance.resource.id}"), transaction.atomic():
+            # Check if there are any tokens allocated for this schedule in the future
+            availability_ids = instance.availability_set.values_list("id", flat=True)
+            has_future_bookings = TokenSlot.objects.filter(
+                resource=instance.resource,
+                availability_id__in=availability_ids,
+                start_datetime__gt=timezone.now(),
+                allocated__gt=0,
+            ).exists()
+            if has_future_bookings:
+                raise ValidationError(
+                    "Cannot delete schedule as there are future bookings associated with it"
+                )
+            super().perform_delete(instance)
 
     def authorize_delete(self, instance):
         self.authorize_update({}, instance)

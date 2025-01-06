@@ -118,13 +118,7 @@ class TokenBookingViewSet(
     @action(detail=True, methods=["POST"])
     def cancel(self, request, *args, **kwargs):
         instance = self.get_object()
-        if not AuthorizationController.call(
-            "can_write_user_booking",
-            self.request.user,
-            instance.token_slot.resource.facility,
-            instance.token_slot.resource.user,
-        ):
-            raise PermissionDenied("You do not have permission to cancel bookings")
+        self.authorize_update({}, instance)
         return self.cancel_appointment_handler(instance, request.data, request.user)
 
     @action(detail=False, methods=["GET"])
