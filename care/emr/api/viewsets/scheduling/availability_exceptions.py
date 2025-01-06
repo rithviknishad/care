@@ -4,13 +4,14 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 
 from care.emr.api.viewsets.base import EMRModelViewSet
-from care.emr.models import AvailabilityException, SchedulableUserResource
+from care.emr.models import AvailabilityException
 from care.emr.resources.scheduling.availability_exception.spec import (
     AvailabilityExceptionReadSpec,
     AvailabilityExceptionWriteSpec,
 )
 from care.facility.models import Facility
 from care.security.authorization import AuthorizationController
+from care.users.models import User
 
 
 class AvailabilityExceptionFilters(FilterSet):
@@ -38,14 +39,13 @@ class AvailabilityExceptionsViewSet(EMRModelViewSet):
         self.authorize_update({}, instance)
 
     def authorize_create(self, instance):
-        user_resource = get_object_or_404(
-            SchedulableUserResource, external_id=instance.resource
-        )
+        facility = self.get_facility_obj()
+        schedule_user = get_object_or_404(User, external_id=instance.user)
         if not AuthorizationController.call(
             "can_write_user_schedule",
             self.request.user,
-            user_resource.facility,
-            user_resource.user,
+            facility,
+            schedule_user,
         ):
             raise PermissionDenied("You do not have permission to view user schedule")
 
