@@ -180,7 +180,7 @@ class Question(QuestionnaireBaseSpec):
         return self
 
 
-class QuestionnaireSpec(QuestionnaireBaseSpec):
+class QuestionnaireWriteSpec(QuestionnaireBaseSpec):
     version: str = Field("1.0", frozen=True, description="Version of the questionnaire")
     slug: str | None = Field(None, min_length=5, max_length=25, pattern=r"^[-\w]+$")
     title: str
@@ -192,7 +192,6 @@ class QuestionnaireSpec(QuestionnaireBaseSpec):
         {}, description="Styling requirements without validation"
     )
     questions: list[Question]
-    organizations: list[UUID4] = Field(min_length=1)
 
     @field_validator("slug")
     @classmethod
@@ -235,8 +234,16 @@ class QuestionnaireSpec(QuestionnaireBaseSpec):
             raise ValueError(err)
         return self
 
+
+class QuestionnaireSpec(QuestionnaireWriteSpec):
+    organizations: list[UUID4] = Field(min_length=1)
+
     def perform_extra_deserialization(self, is_update, obj):
         obj._organizations = self.organizations  # noqa SLF001
+
+
+class QuestionnaireUpdateSpec(QuestionnaireWriteSpec):
+    pass
 
 
 class QuestionnaireReadSpec(QuestionnaireBaseSpec):

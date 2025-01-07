@@ -19,6 +19,7 @@ from care.emr.resources.organization.spec import OrganizationReadSpec
 from care.emr.resources.questionnaire.spec import (
     QuestionnaireReadSpec,
     QuestionnaireSpec,
+    QuestionnaireUpdateSpec,
 )
 from care.emr.resources.questionnaire.utils import handle_response
 from care.emr.resources.questionnaire_response.spec import (
@@ -37,6 +38,7 @@ class QuestionnaireViewSet(EMRModelViewSet):
     database_model = Questionnaire
     pydantic_model = QuestionnaireSpec
     pydantic_read_model = QuestionnaireReadSpec
+    pydantic_update_model = QuestionnaireUpdateSpec
     lookup_field = "slug"
     filterset_class = QuestionnaireFilter
     filter_backends = [filters.DjangoFilterBackend]
@@ -48,6 +50,14 @@ class QuestionnaireViewSet(EMRModelViewSet):
             return AuthorizationController.call("can_write_questionnaire", request.user)
 
         return request.user.is_authenticated
+
+    def authorize_update(self, request_obj, model_instance):
+        if not self.request.user.is_superuser:
+            raise PermissionDenied("Only Superusers can edit a questionnaire")
+
+    def authorize_delete(self, instance):
+        if not self.request.user.is_superuser:
+            raise PermissionDenied("Only Superusers can delete a questionnaire")
 
     def perform_create(self, instance):
         with transaction.atomic():
