@@ -107,10 +107,14 @@ class FacilitySchedulableUsersViewSet(EMRModelReadOnlyViewSet):
             ).values("user_id")
         )
 
+class FacilityUserFilter(FilterSet):
+    username = CharFilter(field_name="username", lookup_expr="icontains")
 
 class FacilityUsersViewSet(EMRModelReadOnlyViewSet):
     database_model = User
     pydantic_read_model = UserSpec
+    filterset_class = FacilityUserFilter
+    filter_backends = [DjangoFilterBackend]
 
     def get_queryset(self):
         return User.objects.filter(
