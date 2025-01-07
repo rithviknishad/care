@@ -40,7 +40,11 @@ from care.emr.api.viewsets.resource_request import (
     ResourceRequestViewSet,
 )
 from care.emr.api.viewsets.roles import RoleViewSet
-from care.emr.api.viewsets.scheduling import ScheduleViewSet, SlotViewSet
+from care.emr.api.viewsets.scheduling import (
+    AvailabilityViewSet,
+    ScheduleViewSet,
+    SlotViewSet,
+)
 from care.emr.api.viewsets.scheduling.availability_exceptions import (
     AvailabilityExceptionsViewSet,
 )
@@ -168,6 +172,12 @@ facility_organization_nested_router.register(
 )
 
 facility_nested_router.register(r"schedule", ScheduleViewSet, basename="schedule")
+schedule_nested_router = NestedSimpleRouter(
+    facility_nested_router, r"schedule", lookup="schedule"
+)
+schedule_nested_router.register(
+    r"availability", AvailabilityViewSet, basename="schedule-availability"
+)
 
 facility_nested_router.register(r"slots", SlotViewSet, basename="slot")
 
