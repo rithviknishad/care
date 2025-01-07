@@ -46,6 +46,10 @@ class ScheduleViewSet(EMRModelViewSet):
                 availability_obj.schedule = instance
                 availability_obj.save()
 
+    def perform_update(self, instance):
+        with Lock(f"booking:resource:{instance.resource.id}"):
+            super().perform_update(instance)
+
     def perform_delete(self, instance):
         with Lock(f"booking:resource:{instance.resource.id}"), transaction.atomic():
             # Check if there are any tokens allocated for this schedule in the future
