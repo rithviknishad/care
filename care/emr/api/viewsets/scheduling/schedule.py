@@ -49,7 +49,7 @@ class ScheduleViewSet(EMRModelViewSet):
     def perform_delete(self, instance):
         with Lock(f"booking:resource:{instance.resource.id}"), transaction.atomic():
             # Check if there are any tokens allocated for this schedule in the future
-            availabilities = instance.availability_set.all()
+            availabilities = instance.availabilities.all()
             has_future_bookings = TokenSlot.objects.filter(
                 resource=instance.resource,
                 availability_id__in=availabilities.values_list("id", flat=True),
@@ -69,7 +69,11 @@ class ScheduleViewSet(EMRModelViewSet):
     def validate_data(self, instance, model_obj=None):
         # Validate user is part of the facility
         facility = self.get_facility_obj()
-        schedule_user = get_object_or_404(User, external_id=instance.user)
+        schedule_user = (
+            model_obj.resource.user
+            if model_obj
+            else get_object_or_404(User, external_id=instance.user)
+        )
         if not FacilityOrganizationUser.objects.filter(
             user=schedule_user, organization__facility=facility
         ).exists():

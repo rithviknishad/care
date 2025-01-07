@@ -25,7 +25,6 @@ from care.emr.resources.scheduling.slot.spec import (
 from care.emr.resources.user.spec import UserSpec
 from care.facility.models import Facility, FacilityOrganizationUser
 from care.security.authorization import AuthorizationController
-from care.utils.lock import Lock
 
 
 class CancelBookingSpec(BaseModel):
@@ -50,13 +49,6 @@ class TokenBookingFilters(FilterSet):
         if not resource:
             return queryset.none()
         return queryset.filter(token_slot__resource=resource)
-
-
-def lock_cancel_appointment(token_booking):
-    token_slot = token_booking.token_slot
-    with Lock(f"booking:slot:{token_slot.id}"), transaction.atomic():
-        token_slot.allocated -= 1
-        token_slot.save()
 
 
 class TokenBookingViewSet(
@@ -104,16 +96,19 @@ class TokenBookingViewSet(
             .order_by("-modified_date")
         )
 
-    @classmethod
-    def cancel_appointment_handler(cls, instance, request_data, user):
+    def cancel_appointment_handler(self, instance, request_data, user):
         request_data = CancelBookingSpec(**request_data)
-        if instance.status not in CANCELLED_STATUS_CHOICES:
-            # Free up the slot if it is not cancelled already
-            lock_cancel_appointment(instance)
-        instance.status = request_data.reason
-        instance.updated_by = user
-        instance.save()
-        return Response({"status": request_data.reason})
+        with transaction.atomic():
+            if instance.status not in CANCELLED_STATUS_CHOICES:
+                # Free up the slot if it is not cancelled already
+                instance.token_slot.allocated -= 1
+                instance.token_slot.save()
+            instance.status = request_data.reason
+            instance.updated_by = user
+            instance.save()
+        return Response(
+            TokenBookingReadSpec.serialize(instance).model_dump(exclude=["meta"])
+        )
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, *args, **kwargs):

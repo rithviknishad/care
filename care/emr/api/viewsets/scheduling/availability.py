@@ -179,8 +179,7 @@ class SlotViewSet(EMRRetrieveMixin, EMRBaseViewSet):
         # Get list of all slots, create if missed
         # Return slots
 
-    @classmethod
-    def create_appointment_handler(cls, obj, request_data, user):
+    def create_appointment_handler(self, obj, request_data, user):
         request_data = AppointmentBookingSpec(**request_data)
         patient = Patient.objects.filter(external_id=request_data.patient).first()
         if not patient:

@@ -57,6 +57,11 @@ class ScheduleWriteSpec(ScheduleBaseSpec):
     valid_to: datetime.datetime
     availabilities: list[AvailabilityBaseSpec]
 
+    @model_validator(mode="after")
+    def validate_period(self):
+        if self.valid_from > self.valid_to:
+            raise ValidationError("Valid from cannot be greater than valid to")
+
     def perform_extra_deserialization(self, is_update, obj):
         if not is_update:
             user = get_object_or_404(User, external_id=self.user)
