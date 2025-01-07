@@ -1,9 +1,12 @@
 import datetime
 from enum import Enum
 
-from pydantic import UUID4, Field
+from django.db.models import Sum
+from pydantic import UUID4, Field, model_validator
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 
+from care.emr.models.scheduling.booking import TokenSlot
 from care.emr.models.scheduling.schedule import (
     Availability,
     SchedulableUserResource,
@@ -82,6 +85,38 @@ class ScheduleUpdateSpec(ScheduleBaseSpec):
     name: str
     valid_from: datetime.datetime
     valid_to: datetime.datetime
+
+    def perform_extra_deserialization(self, is_update, obj):
+        old_instance = Schedule.objects.get(id=obj.id)
+
+        # Get sum of allocated tokens in old date range
+        old_allocated_sum = (
+            TokenSlot.objects.filter(
+                resource=old_instance.resource,
+                availability__schedule__id=obj.id,
+                start_datetime__gte=old_instance.valid_from,
+                start_datetime__lte=old_instance.valid_to,
+            ).aggregate(total=Sum("allocated"))["total"]
+            or 0
+        )
+
+        # Get sum of allocated tokens in new validity range
+        new_allocated_sum = (
+            TokenSlot.objects.filter(
+                resource=old_instance.resource,
+                availability__schedule__id=obj.id,
+                start_datetime__gte=self.valid_from,
+                start_datetime__lte=self.valid_to,
+            ).aggregate(total=Sum("allocated"))["total"]
+            or 0
+        )
+
+        if old_allocated_sum != new_allocated_sum:
+            msg = (
+                "Cannot modify schedule validity as it would exclude some allocated slots. "
+                f"Old range has {old_allocated_sum} allocated slots while new range has {new_allocated_sum} allocated slots."
+            )
+            raise ValidationError(msg)
 
 
 class ScheduleReadSpec(ScheduleBaseSpec):
