@@ -107,8 +107,10 @@ class FacilitySchedulableUsersViewSet(EMRModelReadOnlyViewSet):
             ).values("user_id")
         )
 
+
 class FacilityUserFilter(FilterSet):
     username = CharFilter(field_name="username", lookup_expr="icontains")
+
 
 class FacilityUsersViewSet(EMRModelReadOnlyViewSet):
     database_model = User
