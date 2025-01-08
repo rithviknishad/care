@@ -96,7 +96,8 @@ class TokenBookingViewSet(
             .order_by("-modified_date")
         )
 
-    def cancel_appointment_handler(self, instance, request_data, user):
+    @classmethod
+    def cancel_appointment_handler(cls, instance, request_data, user):
         request_data = CancelBookingSpec(**request_data)
         with transaction.atomic():
             if instance.status not in CANCELLED_STATUS_CHOICES:
