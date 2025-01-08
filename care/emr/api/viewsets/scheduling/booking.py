@@ -130,7 +130,7 @@ class TokenBookingViewSet(
         return Response(
             {
                 "users": [
-                    UserSpec.serialize(facility_user.user).model_dump(exclude=["meta"])
+                    UserSpec.serialize(facility_user.user).to_json()
                     for facility_user in facility_users
                 ]
             }
