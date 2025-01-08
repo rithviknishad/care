@@ -67,6 +67,10 @@ class ScheduleViewSet(EMRModelViewSet):
                     "Cannot delete schedule as there are future bookings associated with it"
                 )
             availabilities.update(deleted=True)
+            TokenSlot.objects.filter(
+                resource=instance.resource,
+                availability_id__in=availabilities.values_list("id", flat=True),
+            ).update(deleted=True)
             super().perform_delete(instance)
 
     def validate_data(self, instance, model_obj=None):
