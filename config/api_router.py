@@ -33,7 +33,10 @@ from care.emr.api.viewsets.organization import (
     OrganizationViewSet,
 )
 from care.emr.api.viewsets.patient import PatientViewSet
-from care.emr.api.viewsets.questionnaire import QuestionnaireViewSet
+from care.emr.api.viewsets.questionnaire import (
+    QuestionnaireTagsViewSet,
+    QuestionnaireViewSet,
+)
 from care.emr.api.viewsets.questionnaire_response import QuestionnaireResponseViewSet
 from care.emr.api.viewsets.resource_request import (
     ResourceRequestCommentViewSet,
@@ -86,6 +89,10 @@ router.register("batch_requests", BatchRequestView, basename="batch-requests")
 router.register("valueset", ValueSetViewSet, basename="value-set")
 
 router.register("questionnaire", QuestionnaireViewSet, basename="questionnaire")
+
+router.register(
+    "questionnaire_tag", QuestionnaireTagsViewSet, basename="questionnaire_tags"
+)
 
 router.register("organization", OrganizationViewSet, basename="organization")
 
