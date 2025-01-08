@@ -1,7 +1,7 @@
 from typing import Literal
 
 from django.db import transaction
-from django_filters import CharFilter, DateFilter, FilterSet, UUIDFilter
+from django_filters import CharFilter, DateFromToRangeFilter, FilterSet, UUIDFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from pydantic import BaseModel
 from rest_framework.decorators import action
@@ -35,7 +35,7 @@ class CancelBookingSpec(BaseModel):
 
 class TokenBookingFilters(FilterSet):
     status = CharFilter(field_name="status")
-    date = DateFilter(field_name="token_slot__start_datetime__date")
+    date = DateFromToRangeFilter(field_name="token_slot__start_datetime__date")
     slot = UUIDFilter(field_name="token_slot__external_id")
     user = UUIDFilter(method="filter_by_user")
     patient = UUIDFilter(field_name="patient__external_id")

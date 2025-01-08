@@ -300,6 +300,7 @@ urlpatterns = [
     path("", include(router.urls)),
     path("", include(user_nested_router.urls)),
     path("", include(facility_nested_router.urls)),
+    path("", include(schedule_nested_router.urls)),
     # path("", include(facility_location_nested_router.urls)),
     # path("", include(asset_nested_router.urls)),
     # path("", include(bed_nested_router.urls)),

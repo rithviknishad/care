@@ -183,7 +183,7 @@ class AvailabilityViewSet(EMRModelViewSet):
             raise PermissionDenied("You do not have permission to create schedule")
 
     def authorize_update(self, request_obj, model_instance):
-        self.authorize_create({}, model_instance)
+        self.authorize_create(model_instance)
 
     def authorize_delete(self, instance):
         self.authorize_update({}, instance)
