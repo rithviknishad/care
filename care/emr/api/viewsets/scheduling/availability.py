@@ -301,8 +301,12 @@ def calculate_slots(
             for available_slot in availability["availability"]:
                 if available_slot["day_of_week"] != day_of_week:
                     continue
-                start_time = time.fromisoformat(available_slot["start_time"])
-                end_time = time.fromisoformat(available_slot["end_time"])
+                start_time = datetime.datetime.combine(
+                    date, time.fromisoformat(available_slot["start_time"])
+                )
+                end_time = datetime.datetime.combine(
+                    date, time.fromisoformat(available_slot["end_time"])
+                )
                 while start_time <= end_time:
                     conflicting = False
                     for exception in exceptions:
@@ -311,10 +315,9 @@ def calculate_slots(
                             and exception["end_time"] >= start_time
                         ):
                             conflicting = True
-                    start_time = (
-                        datetime.datetime.combine(date.today(), start_time)
-                        + timedelta(minutes=availability["slot_size_in_minutes"])
-                    ).time()
+                    start_time = start_time + timedelta(
+                        minutes=availability["slot_size_in_minutes"]
+                    )
                     if conflicting:
                         continue
                     slots += availability["tokens_per_slot"]
