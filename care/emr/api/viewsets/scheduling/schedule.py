@@ -55,7 +55,7 @@ class ScheduleViewSet(EMRModelViewSet):
     def perform_delete(self, instance):
         with Lock(f"booking:resource:{instance.resource.id}"), transaction.atomic():
             # Check if there are any tokens allocated for this schedule in the future
-            availabilities = instance.availabilities.all()
+            availabilities = instance.availability_set.all()
             has_future_bookings = TokenSlot.objects.filter(
                 resource=instance.resource,
                 availability_id__in=availabilities.values_list("id", flat=True),

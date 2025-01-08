@@ -20,9 +20,7 @@ class Schedule(EMRBaseModel):
 
 
 class Availability(EMRBaseModel):
-    schedule = models.ForeignKey(
-        Schedule, on_delete=models.CASCADE, related_name="availabilities"
-    )
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     slot_type = models.CharField()
     slot_size_in_minutes = models.IntegerField(null=False, blank=False, default=0)
