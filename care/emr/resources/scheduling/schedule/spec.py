@@ -66,7 +66,9 @@ class AvailabilityUpdateSpec(AvailabilityBaseSpec):
 
         if old_instance.slot_type == "appointment":
             if not self.tokens_per_slot:
-                raise ValidationError("Tokens per slot is required for appointment slots")
+                raise ValidationError(
+                    "Tokens per slot is required for appointment slots"
+                )
             future_slots = TokenSlot.objects.filter(
                 availability__id=obj.id,
                 start_datetime__gte=timezone.now(),
@@ -81,7 +83,10 @@ class AvailabilityUpdateSpec(AvailabilityBaseSpec):
                     )
                     raise ValidationError(msg)
         elif self.tokens_per_slot is not None:
-            raise ValidationError("Tokens per slot is only applicable for appointment slots")
+            raise ValidationError(
+                "Tokens per slot is only applicable for appointment slots"
+            )
+
 
 class AvailabilityForScheduleSpec(AvailabilityBaseSpec):
     name: str
@@ -95,9 +100,13 @@ class AvailabilityForScheduleSpec(AvailabilityBaseSpec):
     def perform_extra_deserialization(self, is_update, obj):
         if self.slot_type == "appointment":
             if not self.slot_size_in_minutes:
-                raise ValidationError("Slot size in minutes is required for appointment slots")
+                raise ValidationError(
+                    "Slot size in minutes is required for appointment slots"
+                )
             if not self.tokens_per_slot:
-                raise ValidationError("Tokens per slot is required for appointment slots")
+                raise ValidationError(
+                    "Tokens per slot is required for appointment slots"
+                )
         else:
             obj.slot_size_in_minutes = None
             obj.tokens_per_slot = None
