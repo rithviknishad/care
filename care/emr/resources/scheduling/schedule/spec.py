@@ -83,11 +83,21 @@ class AvailabilityUpdateSpec(AvailabilityBaseSpec):
 class AvailabilityForScheduleSpec(AvailabilityBaseSpec):
     name: str
     slot_type: SlotTypeOptions
-    slot_size_in_minutes: int = Field(ge=1)
-    tokens_per_slot: int = Field(ge=1)
+    slot_size_in_minutes: int | None = Field(ge=1)
+    tokens_per_slot: int | None = Field(ge=1)
     create_tokens: bool = False
     reason: str = ""
     availability: list[AvailabilityDateTimeSpec]
+
+    def perform_extra_deserialization(self, is_update, obj):
+        if self.slot_type == "appointment":
+            if not self.slot_size_in_minutes:
+                raise ValidationError("Slot size in minutes is required for appointment slots")
+            if not self.tokens_per_slot:
+                raise ValidationError("Tokens per slot is required for appointment slots")
+        else:
+            obj.slot_size_in_minutes = None
+            obj.tokens_per_slot = None
 
 
 class ScheduleBaseSpec(EMRResource):
