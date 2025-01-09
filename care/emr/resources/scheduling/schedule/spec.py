@@ -1,8 +1,7 @@
 import datetime
 from enum import Enum
 
-from django.db.models import Max, Sum
-from django.utils import timezone
+from django.db.models import Sum
 from pydantic import UUID4, Field, field_validator, model_validator
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404

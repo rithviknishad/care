@@ -6,10 +6,10 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.generics import get_object_or_404
 
 from care.emr.api.viewsets.base import (
-    EMRModelViewSet,
     EMRBaseViewSet,
     EMRCreateMixin,
     EMRDeleteMixin,
+    EMRModelViewSet,
 )
 from care.emr.models.organization import FacilityOrganizationUser
 from care.emr.models.scheduling.booking import TokenSlot
