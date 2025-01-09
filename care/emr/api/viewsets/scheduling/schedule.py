@@ -8,7 +8,7 @@ from rest_framework.generics import get_object_or_404
 from care.emr.api.viewsets.base import (
     EMRBaseViewSet,
     EMRCreateMixin,
-    EMRDeleteMixin,
+    EMRDestroyMixin,
     EMRModelViewSet,
 )
 from care.emr.models.organization import FacilityOrganizationUser
@@ -56,7 +56,7 @@ class ScheduleViewSet(EMRModelViewSet):
         with Lock(f"booking:resource:{instance.resource.id}"):
             super().perform_update(instance)
 
-    def perform_delete(self, instance):
+    def perform_destroy(self, instance):
         with Lock(f"booking:resource:{instance.resource.id}"), transaction.atomic():
             # Check if there are any tokens allocated for this schedule in the future
             availabilities = instance.availability_set.all()
@@ -75,7 +75,7 @@ class ScheduleViewSet(EMRModelViewSet):
                 resource=instance.resource,
                 availability_id__in=availabilities.values_list("id", flat=True),
             ).update(deleted=True)
-            super().perform_delete(instance)
+            super().perform_destroy(instance)
 
     def validate_data(self, instance, model_obj=None):
         # Validate user is part of the facility
@@ -107,7 +107,7 @@ class ScheduleViewSet(EMRModelViewSet):
         ):
             raise PermissionDenied("You do not have permission to view user schedule")
 
-    def authorize_delete(self, instance):
+    def authorize_destroy(self, instance):
         self.authorize_update({}, instance)
 
     def clean_create_data(self, request_data):
@@ -129,7 +129,7 @@ class ScheduleViewSet(EMRModelViewSet):
         )
 
 
-class AvailabilityViewSet(EMRCreateMixin, EMRDeleteMixin, EMRBaseViewSet):
+class AvailabilityViewSet(EMRCreateMixin, EMRDestroyMixin, EMRBaseViewSet):
     database_model = Availability
     pydantic_model = AvailabilityForScheduleSpec
 
@@ -168,7 +168,7 @@ class AvailabilityViewSet(EMRCreateMixin, EMRDeleteMixin, EMRBaseViewSet):
         instance.schedule = schedule
         super().perform_create(instance)
 
-    def perform_delete(self, instance):
+    def perform_destroy(self, instance):
         with Lock(f"booking:resource:{instance.schedule.resource.id}"):
             has_future_bookings = TokenSlot.objects.filter(
                 availability_id=instance.id,
@@ -179,7 +179,7 @@ class AvailabilityViewSet(EMRCreateMixin, EMRDeleteMixin, EMRBaseViewSet):
                 raise ValidationError(
                     "Cannot delete availability as there are future bookings associated with it"
                 )
-            super().perform_delete(instance)
+            super().perform_destroy(instance)
 
     def authorize_create(self, instance):
         facility = self.get_facility_obj()
