@@ -56,38 +56,6 @@ class AvailabilityBaseSpec(EMRResource):
         return availabilities
 
 
-class AvailabilityUpdateSpec(AvailabilityBaseSpec):
-    name: str
-    tokens_per_slot: int | None = Field(ge=1)
-    reason: str = ""
-
-    def perform_extra_deserialization(self, is_update, obj):
-        old_instance = Availability.objects.get(id=obj.id)
-
-        if old_instance.slot_type == "appointment":
-            if not self.tokens_per_slot:
-                raise ValidationError(
-                    "Tokens per slot is required for appointment slots"
-                )
-            future_slots = TokenSlot.objects.filter(
-                availability__id=obj.id,
-                start_datetime__gte=timezone.now(),
-            )
-            # Prevents editing tokens per slot below the max allocated tokens of future slots
-            if old_instance.tokens_per_slot != self.tokens_per_slot:
-                max_allocated = future_slots.aggregate(max=Max("allocated"))["max"] or 0
-                if max_allocated > self.tokens_per_slot:
-                    msg = (
-                        "Cannot modify tokens per slot as it would exclude some allocated slots. "
-                        f"Max allocated tokens is {max_allocated} while new tokens per slot is {self.tokens_per_slot}."
-                    )
-                    raise ValidationError(msg)
-        elif self.tokens_per_slot is not None:
-            raise ValidationError(
-                "Tokens per slot is only applicable for appointment slots"
-            )
-
-
 class AvailabilityForScheduleSpec(AvailabilityBaseSpec):
     name: str
     slot_type: SlotTypeOptions
@@ -97,19 +65,19 @@ class AvailabilityForScheduleSpec(AvailabilityBaseSpec):
     reason: str = ""
     availability: list[AvailabilityDateTimeSpec]
 
-    def perform_extra_deserialization(self, is_update, obj):
+    @model_validator(mode="after")
+    def validate_for_slot_type(self):
         if self.slot_type == "appointment":
             if not self.slot_size_in_minutes:
-                raise ValidationError(
+                raise ValueError(
                     "Slot size in minutes is required for appointment slots"
                 )
             if not self.tokens_per_slot:
-                raise ValidationError(
-                    "Tokens per slot is required for appointment slots"
-                )
+                raise ValueError("Tokens per slot is required for appointment slots")
         else:
-            obj.slot_size_in_minutes = None
-            obj.tokens_per_slot = None
+            self.slot_size_in_minutes = None
+            self.tokens_per_slot = None
+        return self
 
 
 class ScheduleBaseSpec(EMRResource):
@@ -131,6 +99,7 @@ class ScheduleWriteSpec(ScheduleBaseSpec):
     def validate_period(self):
         if self.valid_from > self.valid_to:
             raise ValidationError("Valid from cannot be greater than valid to")
+        return self
 
     def perform_extra_deserialization(self, is_update, obj):
         if not is_update:
