@@ -18,7 +18,7 @@ from care.security.permissions.patient import PatientPermissions
 from care.utils.tests.base import CareAPITestBase
 
 
-class TestSymptomViewset(CareAPITestBase):
+class TestSymptomViewSet(CareAPITestBase):
     def setUp(self):
         super().setUp()
         self.user = self.create_user()
@@ -31,9 +31,9 @@ class TestSymptomViewset(CareAPITestBase):
             "symptom-list", kwargs={"patient_external_id": self.patient.external_id}
         )
         self.valid_code = {
-            "display": "Low blood pressure",
-            "system": "http://snomed.info/sct",
-            "code": "45007003",
+            "display": "Test Value",
+            "system": "http://test_system.care/test",
+            "code": "123",
         }
         # Mocking validate_valueset
         self.patcher = patch(
@@ -94,7 +94,7 @@ class TestSymptomViewset(CareAPITestBase):
             **kwargs,
         }
 
-    #                            LIST TESTS
+    # LIST TESTS
     def test_list_symptoms_with_permissions(self):
         """
         Users with `can_view_clinical_data` on a non-completed encounter
@@ -201,12 +201,33 @@ class TestSymptomViewset(CareAPITestBase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
-    #                           CREATE TESTS
+    # CREATE TESTS
     def test_create_symptom_without_permissions(self):
         """
         Users who lack `can_write_encounter` get (HTTP 403) when creating.
         """
         # No permission attached
+        encounter = self.create_encounter(
+            patient=self.patient,
+            facility=self.facility,
+            organization=self.organization,
+            status=None,
+        )
+        symptom_data_dict = self.generate_data_for_symptom(encounter)
+
+        response = self.client.post(self.base_url, symptom_data_dict, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_symptom_without_permissions_on_facility(self):
+        """
+        Users who lack `can_write_encounter` get (HTTP 403) when creating.
+        """
+        # No permission attached
+        permissions = [EncounterPermissions.can_write_encounter.name]
+        role = self.create_role_with_permissions(permissions)
+        organization = self.create_organization(org_type="govt")
+        self.attach_role_organization_user(organization, self.user, role)
+
         encounter = self.create_encounter(
             patient=self.patient,
             facility=self.facility,
