@@ -113,4 +113,4 @@ class UserRetrieveSpec(UserSpec):
             mapping["geo_organization"] = OrganizationReadSpec.serialize(
                 obj.geo_organization
             ).to_json()
-        mapping["flags"] = obj.get_facility_flags()
+        mapping["flags"] = obj.get_all_flags()
