@@ -95,10 +95,10 @@ class TestDiagnosisViewSet(CareAPITestBase):
         }
 
     # LIST TESTS
-    def test_list_diagnosiss_with_permissions(self):
+    def test_list_diagnosis_with_permissions(self):
         """
         Users with `can_view_clinical_data` on a non-completed encounter
-        can list diagnosiss (HTTP 200).
+        can list diagnosis (HTTP 200).
         """
         # Attach the needed role/permission
         permissions = [PatientPermissions.can_view_clinical_data.name]
@@ -116,7 +116,7 @@ class TestDiagnosisViewSet(CareAPITestBase):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
 
-    def test_list_diagnosiss_with_permissions_and_encounter_status_as_completed(self):
+    def test_list_diagnosis_with_permissions_and_encounter_status_as_completed(self):
         """
         Users with `can_view_clinical_data` but a completed encounter => (HTTP 403).
         """
@@ -133,7 +133,7 @@ class TestDiagnosisViewSet(CareAPITestBase):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 403)
 
-    def test_list_diagnosiss_without_permissions(self):
+    def test_list_diagnosis_without_permissions(self):
         """
         Users without `can_view_clinical_data` => (HTTP 403).
         """
@@ -147,9 +147,9 @@ class TestDiagnosisViewSet(CareAPITestBase):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 403)
 
-    def test_list_diagnosiss_for_single_encounter_with_permissions(self):
+    def test_list_diagnosis_for_single_encounter_with_permissions(self):
         """
-        Users with `can_read_encounter` can list diagnosiss for that encounter (HTTP 200).
+        Users with `can_read_encounter` can list diagnosis for that encounter (HTTP 200).
         """
         permissions = [EncounterPermissions.can_read_encounter.name]
         role = self.create_role_with_permissions(permissions)
@@ -166,11 +166,11 @@ class TestDiagnosisViewSet(CareAPITestBase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_list_diagnosiss_for_single_encounter_with_permissions_and_encounter_status_completed(
+    def test_list_diagnosis_for_single_encounter_with_permissions_and_encounter_status_completed(
         self,
     ):
         """
-        Users with `can_read_encounter` on a completed encounter can still list diagnosiss (HTTP 200).
+        Users with `can_read_encounter` on a completed encounter can still list diagnosis (HTTP 200).
         """
         permissions = [EncounterPermissions.can_read_encounter.name]
         role = self.create_role_with_permissions(permissions)
@@ -186,7 +186,7 @@ class TestDiagnosisViewSet(CareAPITestBase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_list_diagnosiss_for_single_encounter_without_permissions(self):
+    def test_list_diagnosis_for_single_encounter_without_permissions(self):
         """
         Users without `can_read_encounter` or `can_view_clinical_data` => (HTTP 403).
         """
