@@ -322,6 +322,28 @@ class TestSymptomViewSet(CareAPITestBase):
         response = self.client.post(self.base_url, symptom_data_dict, format="json")
         self.assertEqual(response.status_code, 403)
 
+    def test_create_symptom_with_permissions_and_no_association_with_facility(self):
+        """
+        Test that users with `can_write_encounter` permission, but who are not
+        associated with the facility, receive an HTTP 403 (Forbidden) response
+        when attempting to create a symptom.
+        """
+        permissions = [EncounterPermissions.can_write_encounter.name]
+        role = self.create_role_with_permissions(permissions)
+        organization = self.create_organization(org_type="govt")
+        self.attach_role_organization_user(organization, self.user, role)
+
+        encounter = self.create_encounter(
+            patient=self.patient,
+            facility=self.facility,
+            organization=self.organization,
+            status=None,
+        )
+        symptom_data_dict = self.generate_data_for_symptom(encounter)
+
+        response = self.client.post(self.base_url, symptom_data_dict, format="json")
+        self.assertEqual(response.status_code, 403)
+
     # RETRIEVE TESTS
     def test_retrieve_symptom_with_permissions(self):
         """
