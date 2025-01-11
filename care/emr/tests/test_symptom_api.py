@@ -167,7 +167,7 @@ class TestSymptomViewSet(CareAPITestBase):
         self.assertEqual(response.status_code, 200)
 
     def test_list_symptoms_for_single_encounter_with_permissions_and_encounter_status_completed(
-            self,
+        self,
     ):
         """
         Users with `can_read_encounter` on a completed encounter can still list symptoms (HTTP 200).

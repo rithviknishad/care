@@ -167,7 +167,7 @@ class TestDiagnosisViewSet(CareAPITestBase):
         self.assertEqual(response.status_code, 200)
 
     def test_list_diagnosiss_for_single_encounter_with_permissions_and_encounter_status_completed(
-            self,
+        self,
     ):
         """
         Users with `can_read_encounter` on a completed encounter can still list diagnosiss (HTTP 200).
@@ -421,7 +421,6 @@ class TestDiagnosisViewSet(CareAPITestBase):
         diagnosis_data_updated["code"] = self.valid_code
 
         response = self.client.put(url, diagnosis_data_updated, format="json")
-        print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["severity"], "mild")
 
