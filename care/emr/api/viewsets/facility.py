@@ -1,7 +1,9 @@
 from django.db.models import Q
 from django.utils.decorators import method_decorator
-from django_filters import CharFilter, FilterSet
+from django_filters import CharFilter, FilterSet, NumberFilter
+from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters as drf_filters
 from rest_framework.decorators import action, parser_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
@@ -24,8 +26,18 @@ from care.users.models import User
 from care.utils.file_uploads.cover_image import delete_cover_image
 
 
-class FacilityFilters(FilterSet):
+class GeoOrganizationFilter(filters.UUIDFilter):
+    def filter(self, qs, value):
+        if value:
+            organization = get_object_or_404(Organization, external_id=value)
+            return qs.filter(geo_organization_cache__overlap=[organization.id])
+        return qs
+
+
+class FacilityFilters(filters.FilterSet):
     name = CharFilter(field_name="name", lookup_expr="icontains")
+    facility_type = NumberFilter(field_name="facility_type")
+    organization = GeoOrganizationFilter()
     phone_number = CharFilter(field_name="phone_number", lookup_expr="iexact")
 
 
@@ -124,3 +136,20 @@ class FacilityUsersViewSet(EMRModelReadOnlyViewSet):
                 organization__facility__external_id=self.kwargs["facility_external_id"]
             ).values("user_id")
         )
+
+
+class AllFacilityViewSet(EMRModelReadOnlyViewSet):
+    permission_classes = ()
+    authentication_classes = ()
+
+    database_model = Facility
+    pydantic_model = FacilityCreateSpec
+    pydantic_read_model = FacilityReadSpec
+    pydantic_retrieve_model = FacilityRetrieveSpec
+    filterset_class = FacilityFilters
+    filter_backends = (filters.DjangoFilterBackend, drf_filters.SearchFilter)
+    lookup_field = "external_id"
+    search_fields = ["name"]
+
+    def get_queryset(self):
+        return Facility.objects.filter(is_public=True).select_related()
