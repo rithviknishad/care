@@ -1,4 +1,5 @@
 import datetime
+import re
 import uuid
 from enum import Enum
 
@@ -65,6 +66,22 @@ class PatientCreateSpec(PatientBaseSpec):
         ).exists():
             raise ValueError("Geo Organization does not exist")
         return geo_organization
+
+    @field_validator("phone_number", "emergency_phone_number")
+    @classmethod
+    def validate_phone_number(cls, value):
+        indian_mobile_number_regex = r"^(?=^\+91)(^\+91[6-9]\d{9}$)"
+        international_mobile_number_regex = r"^(?!^\+91)(^\+\d{1,3}\d{8,14}$)"
+        landline_number_regex = r"^\+91[2-9]\d{7,9}$"
+
+        if (
+            re.match(indian_mobile_number_regex, value)
+            or re.match(international_mobile_number_regex, value)
+            or re.match(landline_number_regex, value)
+        ):
+            return value
+        error = f"Invalid phone number format: {value}"
+        raise ValueError(error)
 
     def perform_extra_deserialization(self, is_update, obj):
         if not is_update:
