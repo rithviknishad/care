@@ -4,6 +4,7 @@ from django_filters import CharFilter, FilterSet, NumberFilter
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters as drf_filters
+from rest_framework import serializers
 from rest_framework.decorators import action, parser_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
@@ -19,11 +20,40 @@ from care.emr.resources.facility.spec import (
     FacilityRetrieveSpec,
 )
 from care.emr.resources.user.spec import UserSpec
-from care.facility.api.serializers.facility import FacilityImageUploadSerializer
 from care.facility.models import Facility
 from care.security.authorization import AuthorizationController
 from care.users.models import User
-from care.utils.file_uploads.cover_image import delete_cover_image
+from care.utils.file_uploads.cover_image import delete_cover_image, upload_cover_image
+from care.utils.models.validators import (
+    cover_image_validator,
+    custom_image_extension_validator,
+)
+
+
+class FacilityImageUploadSerializer(serializers.ModelSerializer):
+    cover_image = serializers.ImageField(
+        required=True,
+        write_only=True,
+        validators=[custom_image_extension_validator, cover_image_validator],
+    )
+    read_cover_image_url = serializers.URLField(read_only=True)
+
+    class Meta:
+        model = Facility
+        # Check DRYpermissions before updating
+        fields = ("cover_image", "read_cover_image_url")
+
+    def save(self, **kwargs):
+        facility: Facility = self.instance
+        image = self.validated_data["cover_image"]
+        facility.cover_image_url = upload_cover_image(
+            image,
+            str(facility.external_id),
+            "cover_images",
+            facility.cover_image_url,
+        )
+        facility.save(update_fields=["cover_image_url"])
+        return facility
 
 
 class GeoOrganizationFilter(filters.UUIDFilter):
