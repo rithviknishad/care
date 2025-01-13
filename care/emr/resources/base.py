@@ -2,9 +2,11 @@ import datetime
 import uuid
 from enum import Enum
 from types import UnionType
-from typing import get_origin
+from typing import Annotated, Union, get_origin
 
+import phonenumbers
 from pydantic import BaseModel
+from pydantic_extra_types.phone_numbers import PhoneNumberValidator
 
 from care.emr.fhir.schema.base import Coding
 
@@ -140,3 +142,22 @@ class EMRResource(BaseModel):
 
     def to_json(self):
         return self.model_dump(mode="json", exclude=["meta"])
+
+
+IndianPhoneNumber = Annotated[
+    Union[str, phonenumbers.PhoneNumber],  # noqa: UP007
+    PhoneNumberValidator(
+        default_region="IN",
+        supported_regions=["IN"],
+        number_format="E164",
+    ),
+]
+
+InternationalPhoneNumber = Annotated[
+    Union[str, phonenumbers.PhoneNumber()],  # noqa: UP007
+    PhoneNumberValidator(
+        default_region=None,
+        supported_regions=[],
+        number_format="E164",
+    ),
+]

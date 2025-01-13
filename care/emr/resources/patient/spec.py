@@ -2,13 +2,18 @@ import datetime
 import re
 import uuid
 from enum import Enum
+from typing import Union
 
 from django.utils import timezone
 from pydantic import UUID4, Field, field_validator, model_validator
 
 from care.emr.models import Organization
 from care.emr.models.patient import Patient
-from care.emr.resources.base import EMRResource
+from care.emr.resources.base import (
+    EMRResource,
+    IndianPhoneNumber,
+    InternationalPhoneNumber,
+)
 
 
 class BloodGroupChoices(str, Enum):
@@ -30,6 +35,9 @@ class GenderChoices(str, Enum):
     transgender = "transgender"
 
 
+PatientPhoneNumber = Union[IndianPhoneNumber, InternationalPhoneNumber]  # noqa: UP007
+
+
 class PatientBaseSpec(EMRResource):
     __model__ = Patient
     __exclude__ = ["geo_organization"]
@@ -37,8 +45,8 @@ class PatientBaseSpec(EMRResource):
     id: UUID4 | None = None
     name: str = Field(max_length=200)
     gender: GenderChoices
-    phone_number: str = Field(max_length=14)
-    emergency_phone_number: str | None = Field(None, max_length=14)
+    phone_number: PatientPhoneNumber = Field(max_length=14)
+    emergency_phone_number: PatientPhoneNumber | None = Field(None, max_length=14)
     address: str
     permanent_address: str
     pincode: int

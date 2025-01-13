@@ -1,14 +1,11 @@
+from secrets import choice
+
 from django.urls import reverse
-from polyfactory.factories.pydantic_factory import ModelFactory
 from rest_framework import status
 
-from care.emr.resources.patient.spec import PatientCreateSpec
+from care.emr.resources.patient.spec import BloodGroupChoices, GenderChoices
 from care.security.permissions.patient import PatientPermissions
 from care.utils.tests.base import CareAPITestBase
-
-
-class PatientFactory(ModelFactory[PatientCreateSpec]):
-    __model__ = PatientCreateSpec
 
 
 class TestPatientViewSet(CareAPITestBase):
@@ -27,10 +24,22 @@ class TestPatientViewSet(CareAPITestBase):
         super().setUp()  # Call parent's setUp to ensure proper initialization
         self.base_url = reverse("patient-list")
 
-    def generate_patient_data(self, **kwargs):
+    def generate_patient_data(self, geo_organization, **kwargs):
+        data = {
+            "name": self.fake.name(),
+            "gender": choice(list(GenderChoices)),
+            "address": self.fake.address(),
+            "permanent_address": self.fake.address(),
+            "pincode": self.fake.random_int(min=100000, max=999999),
+            "blood_group": choice(list(BloodGroupChoices)),
+            "phone_number": "+919876543210",
+            "emergency_phone_number": "+14155552671",
+            "geo_organization": geo_organization,
+        }
         if "age" not in kwargs and "date_of_birth" not in kwargs:
             kwargs["age"] = self.fake.random_int(min=1, max=100)
-        return PatientFactory.build(meta={}, gender="male", **kwargs)
+        data.update(**kwargs)
+        return data
 
     def test_create_patient_unauthenticated(self):
         """Test that unauthenticated users cannot create patients"""
@@ -57,9 +66,7 @@ class TestPatientViewSet(CareAPITestBase):
         )
         self.attach_role_organization_user(organization, user, role)
         self.client.force_authenticate(user=user)
-        response = self.client.post(
-            self.base_url, patient_data.model_dump(mode="json"), format="json"
-        )
+        response = self.client.post(self.base_url, patient_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_patient_unauthorization(self):
@@ -75,7 +82,5 @@ class TestPatientViewSet(CareAPITestBase):
         )
         self.attach_role_organization_user(organization, user, role)
         self.client.force_authenticate(user=user)
-        response = self.client.post(
-            self.base_url, patient_data.model_dump(mode="json"), format="json"
-        )
+        response = self.client.post(self.base_url, patient_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
