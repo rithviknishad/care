@@ -42,8 +42,8 @@ simplejson = "==3.19.3"
 sentry-sdk = "==2.18.0"
 whitenoise = "==6.8.2"
 django-anymail = {extras = ["amazon-ses"], version = "*"}
-phonenumbers = "8.13.52"
 pydantic-extra-types = "2.10.1"
+phonenumberslite = "==8.13.52"
 
 [dev-packages]
 boto3-stubs = { extras = ["s3", "boto3"], version = "*" }

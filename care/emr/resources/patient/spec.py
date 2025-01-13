@@ -1,19 +1,13 @@
 import datetime
-import re
 import uuid
 from enum import Enum
-from typing import Union
 
 from django.utils import timezone
 from pydantic import UUID4, Field, field_validator, model_validator
 
 from care.emr.models import Organization
 from care.emr.models.patient import Patient
-from care.emr.resources.base import (
-    EMRResource,
-    IndianPhoneNumber,
-    InternationalPhoneNumber,
-)
+from care.emr.resources.base import EMRResource, PhoneNumber
 
 
 class BloodGroupChoices(str, Enum):
@@ -35,9 +29,6 @@ class GenderChoices(str, Enum):
     transgender = "transgender"
 
 
-PatientPhoneNumber = Union[IndianPhoneNumber, InternationalPhoneNumber]  # noqa: UP007
-
-
 class PatientBaseSpec(EMRResource):
     __model__ = Patient
     __exclude__ = ["geo_organization"]
@@ -45,8 +36,8 @@ class PatientBaseSpec(EMRResource):
     id: UUID4 | None = None
     name: str = Field(max_length=200)
     gender: GenderChoices
-    phone_number: PatientPhoneNumber = Field(max_length=14)
-    emergency_phone_number: PatientPhoneNumber | None = Field(None, max_length=14)
+    phone_number: PhoneNumber = Field(max_length=14)
+    emergency_phone_number: PhoneNumber | None = Field(None, max_length=14)
     address: str
     permanent_address: str
     pincode: int
@@ -74,22 +65,6 @@ class PatientCreateSpec(PatientBaseSpec):
         ).exists():
             raise ValueError("Geo Organization does not exist")
         return geo_organization
-
-    @field_validator("phone_number", "emergency_phone_number")
-    @classmethod
-    def validate_phone_number(cls, value):
-        indian_mobile_number_regex = r"^(?=^\+91)(^\+91[6-9]\d{9}$)"
-        international_mobile_number_regex = r"^(?!^\+91)(^\+\d{1,3}\d{8,14}$)"
-        landline_number_regex = r"^\+91[2-9]\d{7,9}$"
-
-        if (
-            re.match(indian_mobile_number_regex, value)
-            or re.match(international_mobile_number_regex, value)
-            or re.match(landline_number_regex, value)
-        ):
-            return value
-        error = f"Invalid phone number format: {value}"
-        raise ValueError(error)
 
     def perform_extra_deserialization(self, is_update, obj):
         if not is_update:

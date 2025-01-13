@@ -144,16 +144,7 @@ class EMRResource(BaseModel):
         return self.model_dump(mode="json", exclude=["meta"])
 
 
-IndianPhoneNumber = Annotated[
-    Union[str, phonenumbers.PhoneNumber],  # noqa: UP007
-    PhoneNumberValidator(
-        default_region="IN",
-        supported_regions=["IN"],
-        number_format="E164",
-    ),
-]
-
-InternationalPhoneNumber = Annotated[
+PhoneNumber = Annotated[
     Union[str, phonenumbers.PhoneNumber()],  # noqa: UP007
     PhoneNumberValidator(
         default_region=None,
