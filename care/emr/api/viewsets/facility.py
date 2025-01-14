@@ -81,18 +81,13 @@ class FacilityViewSet(EMRModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if self.request.is_superuser:
+            return qs
         organization_ids = list(
             OrganizationUser.objects.filter(user=self.request.user).values_list(
                 "organization_id", flat=True
             )
         )
-        if self.request.GET.get("geo_organization"):
-            geo_organization = get_object_or_404(
-                Organization,
-                external_id=self.request.GET["geo_organization"],
-                org_type="govt",
-            )
-            qs = qs.filter(geo_organization_cache__overlap=[geo_organization.id])
         return qs.filter(
             Q(
                 id__in=FacilityOrganizationUser.objects.filter(
