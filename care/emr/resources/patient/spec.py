@@ -67,10 +67,10 @@ class PatientCreateSpec(PatientBaseSpec):
         return geo_organization
 
     def perform_extra_deserialization(self, is_update, obj):
+        obj.geo_organization = Organization.objects.get(
+            external_id=self.geo_organization
+        )
         if not is_update:
-            obj.geo_organization = Organization.objects.get(
-                external_id=self.geo_organization
-            )
             if self.age:
                 obj.year_of_birth = timezone.now().date().year - self.age
             else:
