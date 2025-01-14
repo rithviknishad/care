@@ -52,17 +52,19 @@ class BookingStatusChoices(str, Enum):
     checked_in = "checked_in"
     waitlist = "waitlist"
     in_consultation = "in_consultation"
+    rescheduled = "rescheduled"
 
 
 CANCELLED_STATUS_CHOICES = [
     BookingStatusChoices.entered_in_error.value,
     BookingStatusChoices.cancelled.value,
+    BookingStatusChoices.rescheduled.value,
 ]
 
 
 class TokenBookingBaseSpec(EMRResource):
     __model__ = TokenBooking
-    __exclude__ = ["token_slot", "patient"]
+    __exclude__ = ["token_slot", "patient", "previous_booking"]
 
 
 class TokenBookingWriteSpec(TokenBookingBaseSpec):
