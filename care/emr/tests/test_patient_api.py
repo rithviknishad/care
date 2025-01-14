@@ -40,7 +40,7 @@ class TestPatientViewSet(CareAPITestBase):
     def generate_patient_data(self, geo_organization, **kwargs):
         data = {
             "name": self.fake.name(),
-            "gender": choice(list(GenderChoices)),
+            "gender": "male",
             "address": self.fake.address(),
             "permanent_address": self.fake.address(),
             "pincode": self.fake.random_int(min=100000, max=999999),
