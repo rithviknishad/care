@@ -11,8 +11,8 @@ from care.emr.resources.base import EMRResource
 from care.emr.resources.facility.spec import FacilityBareMinimumSpec
 from care.emr.resources.patient.otp_based_flow import PatientOTPReadSpec
 from care.emr.resources.user.spec import UserSpec
-from care.users.models import User
 from care.facility.models import Facility
+from care.users.models import User
 
 
 class AvailabilityforTokenSpec(EMRResource):
