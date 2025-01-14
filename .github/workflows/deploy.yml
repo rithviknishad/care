@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - 'v*'
+      - "v*"
     branches:
       - develop
     paths-ignore:
@@ -124,8 +124,6 @@ jobs:
         run: |
           echo "Release ${{ github.sha }} is ready to be deployed to production"
 
-
-
   deploy-staging-egov:
     needs: build
     if: github.ref == 'refs/heads/develop'
@@ -148,11 +146,15 @@ jobs:
           IMAGE_TAG: latest-${{ github.run_number }}
         run: echo "IMAGE_VALUE=`echo ghcr.io/${{ github.repository }}:$IMAGE_TAG`" >> $GITHUB_ENV
 
-
       - name: Download task definition for Celery Service
         run: |
-          aws ecs describe-task-definition --task-definition ${{ env.ECS_SERVICE_CELERY }} --query taskDefinition > celery-task-definition.json
-
+          set -e
+          if aws ecs describe-task-definition --task-definition ${{ env.ECS_SERVICE_CELERY }} --query taskDefinition > celery-task-definition.json; then
+            echo "Successfully downloaded Celery task definition."
+          else
+            echo "Failed to download Celery task definition." >&2
+            exit 1
+          fi
 
       - name: Fill in the new image ID in the Celery task definition
         id: celery-task-def
@@ -172,8 +174,13 @@ jobs:
 
       - name: Download task definition for Backend Service
         run: |
-          aws ecs describe-task-definition --task-definition ${{ env.ECS_SERVICE_BACKEND }} --query taskDefinition > backend-task-definition.json
-
+          set -e
+          if aws ecs describe-task-definition --task-definition ${{ env.ECS_SERVICE_BACKEND }} --query taskDefinition > backend-task-definition.json; then
+            echo "Successfully downloaded Backend task definition."
+          else
+            echo "Failed to download Backend task definition." >&2
+            exit 1
+          fi
       - name: Fill in the new image ID in the Backend task definition
         id: backend-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
