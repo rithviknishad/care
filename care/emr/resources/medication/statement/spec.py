@@ -24,7 +24,7 @@ class MedicationStatementStatus(str, Enum):
 
 class MedicationStatementInformationSourceType(str, Enum):
     related_person = "related_person"
-    user = "user"
+    practitioner = "practitioner"
     patient = "patient"
 
 

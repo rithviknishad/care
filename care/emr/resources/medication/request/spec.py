@@ -3,11 +3,11 @@ from enum import Enum
 
 from pydantic import UUID4, BaseModel, Field, field_validator
 
-from care.emr.fhir.schema.base import Coding
 from care.emr.models.encounter import Encounter
 from care.emr.models.medication_request import MedicationRequest
 from care.emr.registries.care_valueset.care_valueset import validate_valueset
 from care.emr.resources.base import EMRResource
+from care.emr.resources.common.coding import Coding
 from care.emr.resources.medication.valueset.additional_instruction import (
     CARE_ADDITIONAL_INSTRUCTION_VALUESET,
 )
@@ -20,6 +20,7 @@ from care.emr.resources.medication.valueset.as_needed_reason import (
 from care.emr.resources.medication.valueset.body_site import CARE_BODY_SITE_VALUESET
 from care.emr.resources.medication.valueset.medication import CARE_MEDICATION_VALUESET
 from care.emr.resources.medication.valueset.route import CARE_ROUTE_VALUESET
+from care.emr.resources.observation.valueset import CARE_UCUM_UNITS
 from care.emr.resources.user.spec import UserSpec
 
 
@@ -92,7 +93,7 @@ class DoseType(str, Enum):
 
 class DosageQuantity(BaseModel):
     value: float
-    unit: str
+    unit: Coding = Field(None, json_schema_extra={"slug": CARE_UCUM_UNITS.slug})
 
 
 class DoseRange(BaseModel):
