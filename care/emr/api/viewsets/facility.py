@@ -81,7 +81,7 @@ class FacilityViewSet(EMRModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.request.is_superuser:
+        if self.request.user.is_superuser:
             return qs
         organization_ids = list(
             OrganizationUser.objects.filter(user=self.request.user).values_list(
