@@ -78,9 +78,7 @@ def convert_availability_to_slots(availabilities):
     return slots
 
 
-def lock_create_appointment(
-    token_slot, patient, created_by, reason_for_visit, previous_booking=None
-):
+def lock_create_appointment(token_slot, patient, created_by, reason_for_visit):
     with Lock(f"booking:resource:{token_slot.resource.id}"), transaction.atomic():
         if token_slot.allocated >= token_slot.availability.tokens_per_slot:
             raise ValidationError("Slot is already full")
@@ -92,7 +90,6 @@ def lock_create_appointment(
             booked_by=created_by,
             reason_for_visit=reason_for_visit,
             status="booked",
-            previous_booking=previous_booking,
         )
 
 

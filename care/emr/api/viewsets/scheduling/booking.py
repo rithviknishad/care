@@ -151,7 +151,6 @@ class TokenBookingViewSet(
                 existing_booking.patient,
                 request.user,
                 existing_booking.reason_for_visit,
-                previous_booking=existing_booking,
             )
             return Response(
                 TokenBookingReadSpec.serialize(appointment).model_dump(exclude=["meta"])

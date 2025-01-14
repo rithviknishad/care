@@ -66,7 +66,7 @@ CANCELLED_STATUS_CHOICES = [
 
 class TokenBookingBaseSpec(EMRResource):
     __model__ = TokenBooking
-    __exclude__ = ["token_slot", "patient", "previous_booking"]
+    __exclude__ = ["token_slot", "patient"]
 
 
 class TokenBookingWriteSpec(TokenBookingBaseSpec):
