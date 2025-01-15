@@ -11,6 +11,7 @@ class MedicationRequest(EMRBaseModel):
     priority = models.CharField(max_length=100, null=True, blank=True)
     do_not_perform = models.BooleanField()
     method = models.JSONField(default=dict, null=True, blank=True)
+    medication = models.JSONField(default=dict, null=True, blank=True)
     patient = models.ForeignKey("emr.Patient", on_delete=models.CASCADE)
     encounter = models.ForeignKey("emr.Encounter", on_delete=models.CASCADE)
     dosage_instruction = models.JSONField(default=list, null=True, blank=True)
