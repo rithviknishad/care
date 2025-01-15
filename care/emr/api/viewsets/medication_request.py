@@ -16,6 +16,7 @@ from care.emr.resources.medication.request.spec import (
     MedicationRequestReadSpec,
     MedicationRequestSpec,
     MedicationRequestStatus,
+    MedicationRequestUpdateSpec,
 )
 from care.emr.resources.questionnaire.spec import SubjectType
 
@@ -49,6 +50,7 @@ class MedicationRequestViewSet(
     database_model = MedicationRequest
     pydantic_model = MedicationRequestSpec
     pydantic_read_model = MedicationRequestReadSpec
+    pydantic_update_model = MedicationRequestUpdateSpec
     questionnaire_type = "medication_request"
     questionnaire_title = "Medication Request"
     questionnaire_description = "Medication Request"

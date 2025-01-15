@@ -195,9 +195,12 @@ class DosageInstruction(BaseModel):
         )
 
 
-class BaseMedicationRequestSpec(EMRResource):
+class MedicationRequestResource(EMRResource):
     __model__ = MedicationRequest
     __exclude__ = ["patient", "encounter"]
+
+
+class BaseMedicationRequestSpec(MedicationRequestResource):
     id: UUID4 = None
 
     status: MedicationRequestStatus
@@ -246,6 +249,10 @@ class MedicationRequestSpec(BaseMedicationRequestSpec):
                 external_id=self.encounter
             )  # Needs more validation
             obj.patient = obj.encounter.patient
+
+
+class MedicationRequestUpdateSpec(MedicationRequestResource):
+    status: MedicationRequestStatus
 
 
 class MedicationRequestReadSpec(BaseMedicationRequestSpec):

@@ -201,6 +201,7 @@ class OrganizationViewSet(EMRModelViewSet):
 class OrganizationUserFilter(filters.FilterSet):
     username = filters.CharFilter(field_name="user__username", lookup_expr="icontains")
 
+
 class OrganizationUsersViewSet(EMRModelViewSet):
     database_model = OrganizationUser
     pydantic_model = OrganizationUserWriteSpec
