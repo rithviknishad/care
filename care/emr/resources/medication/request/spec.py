@@ -270,7 +270,3 @@ class MedicationRequestReadSpec(BaseMedicationRequestSpec):
             mapping["created_by"] = UserSpec.serialize(obj.created_by)
         if obj.updated_by:
             mapping["updated_by"] = UserSpec.serialize(obj.updated_by)
-
-
-class MedicationRequestDiscontinueRequest(BaseModel):
-    status_reason: StatusReason = Field(description="Reason for discontinuation")

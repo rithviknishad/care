@@ -32,6 +32,7 @@ class GenderChoices(str, Enum):
 class PatientBaseSpec(EMRResource):
     __model__ = Patient
     __exclude__ = ["geo_organization"]
+    __store_metadata__ = True
 
     id: UUID4 | None = None
     name: str = Field(max_length=200)
