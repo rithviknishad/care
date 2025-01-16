@@ -20,9 +20,7 @@ def rand_pass(size):
     if not settings.USE_SMS:
         return "45612"
 
-    return "".join(
-        secrets.choice(string.ascii_uppercase + string.digits) for _ in range(size)
-    )
+    return "".join(secrets.choice(string.digits) for _ in range(size))
 
 
 class OTPLoginRequestSpec(BaseModel):
@@ -64,8 +62,7 @@ class OTPLoginView(EMRBaseViewSet):
                 send_sms(
                     data.phone_number,
                     (
-                        f"Open Healthcare Network Patient Management System Login, OTP is {random_otp} . "
-                        "Please do not share this Confidential Login Token with anyone else"
+                        f"Kerala Care Login, OTP {random_otp}.  Please do not share this Confidential Login Token with anyone else"
                     ),
                 )
             except Exception as e:
