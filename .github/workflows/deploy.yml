@@ -17,7 +17,7 @@ concurrency:
 env:
   AWS_DEFAULT_REGION: ap-south-1
   AWS_DEFAULT_OUTPUT: json
-  ECS_SERVICE_BACKEND: "care-backend"
+  ECS_SERVICE_BACKEND: "care"
   ECS_SERVICE_CELERY: "care-celery"
   ECS_CLUSTER: "egov"
   CONTAINER_NAME_BACKEND: "care-backend"
