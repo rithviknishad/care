@@ -35,7 +35,7 @@ jobs:
   build:
     needs: test
     name: Build & Push to container registries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
 
@@ -118,7 +118,7 @@ jobs:
     needs: build
     if: startsWith(github.event.ref, 'refs/tags/v')
     name: Notify release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Notify release
         run: |
@@ -128,7 +128,7 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/develop'
     name: Deploy to ECS API Egov
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     environment:
       name: Staging-egov
       url: https://careapi.ohc.network
