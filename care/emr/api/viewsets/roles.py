@@ -8,3 +8,6 @@ from care.security.models import RoleModel
 class RoleViewSet(EMRModelReadOnlyViewSet):
     database_model = RoleModel
     pydantic_model = RoleSpec
+
+
+RoleViewSet.generate_swagger_schema()

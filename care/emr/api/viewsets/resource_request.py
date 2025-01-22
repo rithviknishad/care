@@ -73,6 +73,9 @@ class ResourceRequestViewSet(EMRModelViewSet):
         return self.build_queryset(queryset, self.request.user)
 
 
+ResourceRequestViewSet.generate_swagger_schema()
+
+
 class ResourceRequestCommentViewSet(
     EMRCreateMixin, EMRRetrieveMixin, EMRListMixin, EMRDestroyMixin, EMRBaseViewSet
 ):
@@ -97,3 +100,6 @@ class ResourceRequestCommentViewSet(
         return ResourceRequestComment.objects.filter(
             request=resource_request_obj
         ).select_related("created_by")
+
+
+ResourceRequestCommentViewSet.generate_swagger_schema()

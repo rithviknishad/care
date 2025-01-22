@@ -150,6 +150,9 @@ class FacilityOrganizationViewSet(EMRModelViewSet):
         return Response({"count": len(data), "results": data})
 
 
+FacilityOrganizationViewSet.generate_swagger_schema()
+
+
 class FacilityOrganizationUsersViewSet(EMRModelViewSet):
     database_model = FacilityOrganizationUser
     pydantic_model = FacilityOrganizationUserWriteSpec

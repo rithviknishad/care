@@ -65,3 +65,6 @@ class QuestionnaireResponseViewSet(EMRModelReadOnlyViewSet):
         if "only_unstructured" in self.request.GET:
             queryset = queryset.filter(structured_response_type__isnull=True)
         return queryset
+
+
+QuestionnaireResponseViewSet.generate_swagger_schema()

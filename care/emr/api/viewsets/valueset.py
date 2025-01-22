@@ -66,3 +66,6 @@ class ValueSetViewSet(EMRModelViewSet):
             .get()
         )
         return Response(result)
+
+
+ValueSetViewSet.generate_swagger_schema()

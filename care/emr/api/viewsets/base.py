@@ -2,6 +2,7 @@ import json
 
 from django.db import transaction
 from django.http.response import Http404
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from pydantic import ValidationError
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError as RestFrameworkValidationError
@@ -67,6 +68,9 @@ class EMRRetrieveMixin:
 
 
 class EMRCreateMixin:
+    pydantic_model = None  # Define or override in subclasses
+    pydantic_read_model = None
+
     def perform_create(self, instance):
         instance.created_by = self.request.user
         instance.updated_by = self.request.user
@@ -94,6 +98,10 @@ class EMRCreateMixin:
     def authorize_create(self, instance):
         pass
 
+    @extend_schema(
+        responses={200: pydantic_read_model},
+        request=pydantic_model,
+    )
     def create(self, request, *args, **kwargs):
         return Response(self.handle_create(request.data))
 
@@ -260,6 +268,28 @@ class EMRBaseViewSet(GenericViewSet):
 
     def fetch_patient_from_instance(self, instance):
         return instance.patient
+
+    @classmethod
+    def generate_swagger_schema(cls):
+        """
+        Dynamically extend the schema for child viewsets.
+        """
+        return extend_schema_view(
+            list=extend_schema(
+                responses={200: cls.pydantic_read_model},
+            ),
+            retrieve=extend_schema(
+                responses={200: cls.pydantic_read_model},
+            ),
+            update=extend_schema(
+                request=cls.pydantic_update_model,
+                responses={200: cls.pydantic_read_model},
+            ),
+            create=extend_schema(
+                request=cls.pydantic_model,
+                responses={200: cls.pydantic_read_model},
+            ),
+        )(cls)
 
 
 class EMRQuestionnaireResponseMixin:

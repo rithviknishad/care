@@ -131,6 +131,9 @@ class FacilityViewSet(EMRModelViewSet):
         return Response(status=204)
 
 
+FacilityViewSet.generate_swagger_schema()
+
+
 class FacilitySchedulableUsersViewSet(EMRModelReadOnlyViewSet):
     database_model = User
     pydantic_read_model = UserSpec
@@ -143,6 +146,9 @@ class FacilitySchedulableUsersViewSet(EMRModelReadOnlyViewSet):
                 facility__external_id=self.kwargs["facility_external_id"]
             ).values("user_id")
         )
+
+
+FacilitySchedulableUsersViewSet.generate_swagger_schema()
 
 
 class FacilityUserFilter(FilterSet):
@@ -163,6 +169,9 @@ class FacilityUsersViewSet(EMRModelReadOnlyViewSet):
         )
 
 
+FacilityUsersViewSet.generate_swagger_schema()
+
+
 class AllFacilityViewSet(EMRModelReadOnlyViewSet):
     permission_classes = ()
     authentication_classes = ()
@@ -178,3 +187,6 @@ class AllFacilityViewSet(EMRModelReadOnlyViewSet):
 
     def get_queryset(self):
         return Facility.objects.filter(is_public=True).select_related()
+
+
+AllFacilityViewSet.generate_swagger_schema()

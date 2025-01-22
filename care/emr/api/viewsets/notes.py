@@ -96,6 +96,9 @@ class NoteThreadViewSet(
         return queryset.order_by("-created_date")
 
 
+NoteThreadViewSet.generate_swagger_schema()
+
+
 class NoteMessageViewSet(
     EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
 ):
@@ -154,3 +157,6 @@ class NoteMessageViewSet(
             .filter(thread__external_id=self.kwargs["thread_external_id"])
             .order_by("-created_date")
         )
+
+
+NoteMessageViewSet.generate_swagger_schema()

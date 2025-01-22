@@ -48,6 +48,9 @@ class OrganizationPublicViewSet(EMRModelReadOnlyViewSet):
         return queryset
 
 
+OrganizationPublicViewSet.generate_swagger_schema()
+
+
 class OrganizationViewSet(EMRModelViewSet):
     database_model = Organization
     pydantic_model = OrganizationWriteSpec

@@ -139,3 +139,6 @@ class UserViewSet(EMRModelViewSet):
                 setattr(user, field, request.data[field])
         user.save()
         return Response({})
+
+
+UserViewSet.generate_swagger_schema()

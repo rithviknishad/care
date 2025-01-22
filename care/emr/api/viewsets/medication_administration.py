@@ -43,4 +43,5 @@ class MedicationAdministrationViewSet(
         )
 
 
+MedicationAdministrationViewSet.generate_swagger_schema()
 InternalQuestionnaireRegistry.register(MedicationAdministrationViewSet)

@@ -175,6 +175,10 @@ class EncounterViewSet(
     class EncounterOrganizationManageSpec(BaseModel):
         organization: UUID4
 
+    @extend_schema(
+        request=EncounterOrganizationManageSpec,
+        responses={200: FacilityOrganizationReadSpec},
+    )
     @action(detail=True, methods=["POST"])
     def organizations_add(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -195,7 +199,10 @@ class EncounterViewSet(
         )
         return Response(FacilityOrganizationReadSpec.serialize(organization).to_json())
 
-    @action(detail=True, methods=["DELETE"])
+    @extend_schema(
+        request=EncounterOrganizationManageSpec,
+    )
+    @action(detail=True, methods=["POST"])
     def organizations_remove(self, request, *args, **kwargs):
         instance = self.get_object()
         self.authorize_update({}, instance)
@@ -213,7 +220,7 @@ class EncounterViewSet(
         EncounterOrganization.objects.filter(
             encounter=instance, organization=organization
         ).delete()
-        return Response({}, status=204)
+        return Response({})
 
     def _check_discharge_summary_access(self, encounter):
         if not AuthorizationController.call(
@@ -284,6 +291,9 @@ class EncounterViewSet(
             django_validate_email(value)
             return value
 
+    @extend_schema(
+        request=EmailDischargeSummarySpec,
+    )
     @action(detail=True, methods=["POST"])
     def email_discharge_summary(self, request, *args, **kwargs):
         encounter = self.get_object()
@@ -323,6 +333,9 @@ class EncounterViewSet(
             {"detail": "Discharge Summary will be emailed shortly"},
             status=status.HTTP_202_ACCEPTED,
         )
+
+
+EncounterViewSet.generate_swagger_schema()
 
 
 def dev_preview_discharge_summary(request, encounter_id):

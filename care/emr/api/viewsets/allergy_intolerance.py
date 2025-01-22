@@ -83,4 +83,6 @@ class AllergyIntoleranceViewSet(
         )
 
 
+AllergyIntoleranceViewSet.generate_swagger_schema()
+
 InternalQuestionnaireRegistry.register(AllergyIntoleranceViewSet)

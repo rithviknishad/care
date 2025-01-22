@@ -22,3 +22,6 @@ class PatientOTPView(EMRCreateMixin, EMRListMixin, EMRBaseViewSet):
 
     def get_queryset(self):
         return Patient.objects.filter(phone_number=self.request.user.phone_number)
+
+
+PatientOTPView.generate_swagger_schema()

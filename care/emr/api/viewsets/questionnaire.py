@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
+from drf_spectacular.utils import extend_schema
 from pydantic import UUID4, BaseModel
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -51,6 +52,9 @@ class QuestionnaireTagsViewSet(EMRModelViewSet):
         if self.action in ["create", "update", "delete"]:
             return request.user.is_superuser
         return False
+
+
+QuestionnaireTagsViewSet.generate_swagger_schema()
 
 
 class QuestionnaireTagSlugFilter(filters.CharFilter):
@@ -132,6 +136,10 @@ class QuestionnaireViewSet(EMRModelViewSet):
         )
         return queryset.select_related("created_by", "updated_by")
 
+    @extend_schema(
+        request=QuestionnaireSubmitRequest,
+        responses=QuestionnaireResponseReadSpec,
+    )
     @action(detail=True, methods=["POST"])
     def submit(self, request, *args, **kwargs):
         request_params = QuestionnaireSubmitRequest(**request.data)
@@ -178,6 +186,9 @@ class QuestionnaireViewSet(EMRModelViewSet):
     class QuestionnaireTagsSetSchema(BaseModel):
         tags: list[str]
 
+    @extend_schema(
+        request=QuestionnaireTagsSetSchema,
+    )
     @action(detail=True, methods=["POST"])
     def set_tags(self, request, *args, **kwargs):
         questionnaire = self.get_object()
@@ -196,6 +207,9 @@ class QuestionnaireViewSet(EMRModelViewSet):
     class QuestionnaireOrganizationUpdateSchema(BaseModel):
         organizations: list[UUID4]
 
+    @extend_schema(
+        request=QuestionnaireOrganizationUpdateSchema,
+    )
     @action(detail=True, methods=["POST"])
     def set_organizations(self, request, *args, **kwargs):
         """
@@ -233,3 +247,6 @@ class QuestionnaireViewSet(EMRModelViewSet):
                 "results": organizations_serialized,
             }
         )
+
+
+QuestionnaireViewSet.generate_swagger_schema()

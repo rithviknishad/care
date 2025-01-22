@@ -96,7 +96,6 @@ class DiagnosisViewSet(
     pydantic_model = ConditionSpec
     pydantic_read_model = ConditionSpecRead
     pydantic_update_model = ConditionSpecUpdate
-
     # Filters
     filterset_class = ConditionFilters
     filter_backends = [DjangoFilterBackend]
@@ -123,5 +122,7 @@ class DiagnosisViewSet(
             .select_related("patient", "encounter", "created_by", "updated_by")
         )
 
+
+DiagnosisViewSet = DiagnosisViewSet.generate_swagger_schema()
 
 InternalQuestionnaireRegistry.register(DiagnosisViewSet)
