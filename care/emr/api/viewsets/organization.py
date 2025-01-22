@@ -201,6 +201,9 @@ class OrganizationViewSet(EMRModelViewSet):
         return Response({"count": len(data), "results": data})
 
 
+OrganizationViewSet.generate_swagger_schema()
+
+
 class OrganizationUserFilter(filters.FilterSet):
     username = filters.CharFilter(field_name="user__username", lookup_expr="icontains")
 
@@ -295,3 +298,6 @@ class OrganizationUsersViewSet(EMRModelViewSet):
                 "User does not have the required permissions to list users"
             )
         return OrganizationUser.objects.filter(organization=organization)
+
+
+OrganizationUsersViewSet.generate_swagger_schema()

@@ -252,3 +252,6 @@ class FacilityOrganizationUsersViewSet(EMRModelViewSet):
         return FacilityOrganizationUser.objects.filter(
             organization=organization
         ).select_related("organization", "user", "role")
+
+
+FacilityOrganizationUsersViewSet.generate_swagger_schema()

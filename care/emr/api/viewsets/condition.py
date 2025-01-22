@@ -83,6 +83,7 @@ class SymptomViewSet(
         )
 
 
+SymptomViewSet.generate_swagger_schema()
 InternalQuestionnaireRegistry.register(SymptomViewSet)
 
 

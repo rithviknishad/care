@@ -129,6 +129,9 @@ class ScheduleViewSet(EMRModelViewSet):
         )
 
 
+ScheduleViewSet.generate_swagger_schema()
+
+
 class AvailabilityViewSet(EMRCreateMixin, EMRDestroyMixin, EMRBaseViewSet):
     database_model = Availability
     pydantic_model = AvailabilityForScheduleSpec
@@ -191,3 +194,6 @@ class AvailabilityViewSet(EMRCreateMixin, EMRDestroyMixin, EMRBaseViewSet):
 
     def authorize_destroy(self, instance):
         self.authorize_create(instance)
+
+
+AvailabilityViewSet.generate_swagger_schema()

@@ -172,3 +172,6 @@ class TokenBookingViewSet(
                 ]
             }
         )
+
+
+TokenBookingViewSet.generate_swagger_schema()

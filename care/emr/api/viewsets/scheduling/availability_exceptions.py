@@ -71,3 +71,6 @@ class AvailabilityExceptionsViewSet(EMRModelViewSet):
             .select_related("resource", "created_by", "updated_by")
             .order_by("-modified_date")
         )
+
+
+AvailabilityExceptionsViewSet.generate_swagger_schema()
