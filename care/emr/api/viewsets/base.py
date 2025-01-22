@@ -68,9 +68,6 @@ class EMRRetrieveMixin:
 
 
 class EMRCreateMixin:
-    pydantic_model = None  # Define or override in subclasses
-    pydantic_read_model = None
-
     def perform_create(self, instance):
         instance.created_by = self.request.user
         instance.updated_by = self.request.user
@@ -98,10 +95,6 @@ class EMRCreateMixin:
     def authorize_create(self, instance):
         pass
 
-    @extend_schema(
-        responses={200: pydantic_read_model},
-        request=pydantic_model,
-    )
     def create(self, request, *args, **kwargs):
         return Response(self.handle_create(request.data))
 
