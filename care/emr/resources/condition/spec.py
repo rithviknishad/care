@@ -121,13 +121,4 @@ class ConditionSpecUpdate(BaseConditionSpec):
     clinical_status: ClinicalStatusChoices | None = None
     verification_status: VerificationStatusChoices
     severity: SeverityChoices | None = None
-    code: Coding = Field(json_schema_extra={"slug": CARE_CODITION_CODE_VALUESET.slug})
-    onset: ConditionOnSetSpec = {}
     note: str | None = None
-
-    @field_validator("code")
-    @classmethod
-    def validate_code(cls, code: int):
-        return validate_valueset(
-            "code", cls.model_fields["code"].json_schema_extra["slug"], code
-        )
