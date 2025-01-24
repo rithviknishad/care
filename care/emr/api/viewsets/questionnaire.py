@@ -30,6 +30,7 @@ from care.emr.resources.questionnaire_response.spec import (
     QuestionnaireSubmitRequest,
 )
 from care.security.authorization import AuthorizationController
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 class QuestionnaireTagFilter(filters.FilterSet):
@@ -37,6 +38,7 @@ class QuestionnaireTagFilter(filters.FilterSet):
     slug = filters.CharFilter(field_name="slug", lookup_expr="iexact")
 
 
+@generate_swagger_schema_decorator
 class QuestionnaireTagsViewSet(EMRModelViewSet):
     database_model = QuestionnaireTag
     pydantic_model = QuestionnaireTagSpec
@@ -54,9 +56,6 @@ class QuestionnaireTagsViewSet(EMRModelViewSet):
         return False
 
 
-QuestionnaireTagsViewSet.generate_swagger_schema()
-
-
 class QuestionnaireTagSlugFilter(filters.CharFilter):
     def filter(self, qs, value):
         queryset = qs
@@ -72,6 +71,7 @@ class QuestionnaireFilter(filters.FilterSet):
     tag_slug = QuestionnaireTagSlugFilter(field_name="tag_slug")
 
 
+@generate_swagger_schema_decorator
 class QuestionnaireViewSet(EMRModelViewSet):
     database_model = Questionnaire
     pydantic_model = QuestionnaireSpec
@@ -247,6 +247,3 @@ class QuestionnaireViewSet(EMRModelViewSet):
                 "results": organizations_serialized,
             }
         )
-
-
-QuestionnaireViewSet.generate_swagger_schema()

@@ -19,6 +19,7 @@ from care.emr.resources.scheduling.slot.spec import (
     TokenBookingReadSpec,
     TokenSlotBaseSpec,
 )
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 from config.patient_otp_authentication import (
     JWTTokenPatientAuthentication,
     OTPAuthenticatedPermission,
@@ -34,6 +35,7 @@ class CancelAppointmentSpec(BaseModel):
     appointment: UUID4
 
 
+@generate_swagger_schema_decorator
 class OTPSlotViewSet(EMRRetrieveMixin, EMRBaseViewSet):
     authentication_classes = [JWTTokenPatientAuthentication]
     permission_classes = [OTPAuthenticatedPermission]
@@ -95,6 +97,3 @@ class OTPSlotViewSet(EMRRetrieveMixin, EMRBaseViewSet):
                 ]
             }
         )
-
-
-OTPSlotViewSet.generate_swagger_schema()

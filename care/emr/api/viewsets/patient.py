@@ -22,6 +22,7 @@ from care.emr.resources.user.spec import UserSpec
 from care.security.authorization import AuthorizationController
 from care.security.models import RoleModel
 from care.users.models import User
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 class PatientFilters(FilterSet):
@@ -29,6 +30,7 @@ class PatientFilters(FilterSet):
     phone_number = CharFilter(field_name="phone_number", lookup_expr="iexact")
 
 
+@generate_swagger_schema_decorator
 class PatientViewSet(EMRModelViewSet):
     database_model = Patient
     pydantic_model = PatientCreateSpec
@@ -160,6 +162,3 @@ class PatientViewSet(EMRModelViewSet):
             raise ValidationError("User does not exist")
         PatientUser.objects.filter(user=user, patient=patient).delete()
         return Response({})
-
-
-PatientViewSet.generate_swagger_schema()

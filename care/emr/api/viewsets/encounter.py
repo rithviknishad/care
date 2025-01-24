@@ -47,6 +47,7 @@ from care.emr.tasks.discharge_summary import (
 )
 from care.facility.models import Facility
 from care.security.authorization import AuthorizationController
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 class LiveFilter(filters.CharFilter):
@@ -78,6 +79,7 @@ class EncounterFilters(filters.FilterSet):
     live = LiveFilter()
 
 
+@generate_swagger_schema_decorator
 class EncounterViewSet(
     EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
 ):
@@ -202,7 +204,7 @@ class EncounterViewSet(
     @extend_schema(
         request=EncounterOrganizationManageSpec,
     )
-    @action(detail=True, methods=["POST"])
+    @action(detail=True, methods=["DELETE"])
     def organizations_remove(self, request, *args, **kwargs):
         instance = self.get_object()
         self.authorize_update({}, instance)
@@ -333,9 +335,6 @@ class EncounterViewSet(
             {"detail": "Discharge Summary will be emailed shortly"},
             status=status.HTTP_202_ACCEPTED,
         )
-
-
-EncounterViewSet.generate_swagger_schema()
 
 
 def dev_preview_discharge_summary(request, encounter_id):

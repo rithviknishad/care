@@ -23,6 +23,7 @@ from care.emr.resources.scheduling.schedule.spec import (
 from care.facility.models import Facility
 from care.security.authorization import AuthorizationController
 from care.users.models import User
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 from care.utils.lock import Lock
 
 
@@ -30,6 +31,7 @@ class ScheduleFilters(FilterSet):
     user = UUIDFilter(field_name="resource__user__external_id")
 
 
+@generate_swagger_schema_decorator
 class ScheduleViewSet(EMRModelViewSet):
     database_model = Schedule
     pydantic_model = ScheduleCreateSpec
@@ -129,9 +131,7 @@ class ScheduleViewSet(EMRModelViewSet):
         )
 
 
-ScheduleViewSet.generate_swagger_schema()
-
-
+@generate_swagger_schema_decorator
 class AvailabilityViewSet(EMRCreateMixin, EMRDestroyMixin, EMRBaseViewSet):
     database_model = Availability
     pydantic_model = AvailabilityForScheduleSpec
@@ -194,6 +194,3 @@ class AvailabilityViewSet(EMRCreateMixin, EMRDestroyMixin, EMRBaseViewSet):
 
     def authorize_destroy(self, instance):
         self.authorize_create(instance)
-
-
-AvailabilityViewSet.generate_swagger_schema()

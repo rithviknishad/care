@@ -23,6 +23,7 @@ from care.emr.resources.file_upload.spec import (
     FileUploadUpdateSpec,
 )
 from care.security.authorization import AuthorizationController
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 def file_authorizer(user, file_type, associating_id, permission):
@@ -58,6 +59,7 @@ class FileUploadFilter(filters.FilterSet):
     is_archived = filters.BooleanFilter(field_name="is_archived")
 
 
+@generate_swagger_schema_decorator
 class FileUploadViewSet(
     EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
 ):
@@ -145,6 +147,3 @@ class FileUploadViewSet(
             ]
         )
         return Response(FileUploadListSpec.serialize(obj).to_json())
-
-
-FileUploadViewSet.generate_swagger_schema()

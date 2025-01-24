@@ -19,8 +19,10 @@ from care.emr.resources.resource_request.spec import (
     ResourceRequestListSpec,
     ResourceRequestRetrieveSpec,
 )
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
+@generate_swagger_schema_decorator
 class ResourceRequestViewSet(EMRModelViewSet):
     database_model = ResourceRequest
     pydantic_model = ResourceRequestCreateSpec
@@ -73,9 +75,7 @@ class ResourceRequestViewSet(EMRModelViewSet):
         return self.build_queryset(queryset, self.request.user)
 
 
-ResourceRequestViewSet.generate_swagger_schema()
-
-
+@generate_swagger_schema_decorator
 class ResourceRequestCommentViewSet(
     EMRCreateMixin, EMRRetrieveMixin, EMRListMixin, EMRDestroyMixin, EMRBaseViewSet
 ):
@@ -100,6 +100,3 @@ class ResourceRequestCommentViewSet(
         return ResourceRequestComment.objects.filter(
             request=resource_request_obj
         ).select_related("created_by")
-
-
-ResourceRequestCommentViewSet.generate_swagger_schema()

@@ -17,6 +17,7 @@ from care.emr.resources.condition.spec import (
     ConditionSpecUpdate,
 )
 from care.emr.resources.questionnaire.spec import SubjectType
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 class ValidateEncounterMixin:
@@ -46,6 +47,7 @@ class ConditionFilters(FilterSet):
     severity = CharFilter(field_name="severity", lookup_expr="iexact")
 
 
+@generate_swagger_schema_decorator
 class SymptomViewSet(
     ValidateEncounterMixin,
     EncounterBasedAuthorizationBase,
@@ -83,10 +85,10 @@ class SymptomViewSet(
         )
 
 
-SymptomViewSet.generate_swagger_schema()
 InternalQuestionnaireRegistry.register(SymptomViewSet)
 
 
+@generate_swagger_schema_decorator
 class DiagnosisViewSet(
     ValidateEncounterMixin,
     EncounterBasedAuthorizationBase,
@@ -123,7 +125,5 @@ class DiagnosisViewSet(
             .select_related("patient", "encounter", "created_by", "updated_by")
         )
 
-
-DiagnosisViewSet = DiagnosisViewSet.generate_swagger_schema()
 
 InternalQuestionnaireRegistry.register(DiagnosisViewSet)

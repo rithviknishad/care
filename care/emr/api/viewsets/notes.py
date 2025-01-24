@@ -22,8 +22,10 @@ from care.emr.resources.notes.thread_spec import (
     NoteThreadUpdateSpec,
 )
 from care.security.authorization import AuthorizationController
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
+@generate_swagger_schema_decorator
 class NoteThreadViewSet(
     EMRCreateMixin,
     EMRRetrieveMixin,
@@ -96,9 +98,7 @@ class NoteThreadViewSet(
         return queryset.order_by("-created_date")
 
 
-NoteThreadViewSet.generate_swagger_schema()
-
-
+@generate_swagger_schema_decorator
 class NoteMessageViewSet(
     EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
 ):
@@ -157,6 +157,3 @@ class NoteMessageViewSet(
             .filter(thread__external_id=self.kwargs["thread_external_id"])
             .order_by("-created_date")
         )
-
-
-NoteMessageViewSet.generate_swagger_schema()

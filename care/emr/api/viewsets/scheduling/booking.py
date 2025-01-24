@@ -27,6 +27,7 @@ from care.emr.resources.scheduling.slot.spec import (
 from care.emr.resources.user.spec import UserSpec
 from care.facility.models import Facility, FacilityOrganizationUser
 from care.security.authorization import AuthorizationController
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 class CancelBookingSpec(BaseModel):
@@ -57,6 +58,7 @@ class TokenBookingFilters(FilterSet):
         return queryset.filter(token_slot__resource=resource)
 
 
+@generate_swagger_schema_decorator
 class TokenBookingViewSet(
     EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
 ):
@@ -172,6 +174,3 @@ class TokenBookingViewSet(
                 ]
             }
         )
-
-
-TokenBookingViewSet.generate_swagger_schema()
