@@ -80,6 +80,7 @@ class QuestionnaireViewSet(EMRModelViewSet):
     lookup_field = "slug"
     filterset_class = QuestionnaireFilter
     filter_backends = [filters.DjangoFilterBackend]
+    tags = ["Questionnaire"]
 
     def permissions_controller(self, request):
         if self.action in ["list", "retrieve", "get_organizations"]:
@@ -139,6 +140,7 @@ class QuestionnaireViewSet(EMRModelViewSet):
     @extend_schema(
         request=QuestionnaireSubmitRequest,
         responses=QuestionnaireResponseReadSpec,
+        tags=["Questionnaire"],
     )
     @action(detail=True, methods=["POST"])
     def submit(self, request, *args, **kwargs):
@@ -163,6 +165,7 @@ class QuestionnaireViewSet(EMRModelViewSet):
             response = handle_response(questionnaire, request_params, request.user)
         return Response(QuestionnaireResponseReadSpec.serialize(response).to_json())
 
+    @extend_schema(tags=["Questionnaire"])
     @action(detail=True, methods=["GET"])
     def get_organizations(self, request, *args, **kwargs):
         """
@@ -186,9 +189,7 @@ class QuestionnaireViewSet(EMRModelViewSet):
     class QuestionnaireTagsSetSchema(BaseModel):
         tags: list[str]
 
-    @extend_schema(
-        request=QuestionnaireTagsSetSchema,
-    )
+    @extend_schema(request=QuestionnaireTagsSetSchema, tags=["Questionnaire"])
     @action(detail=True, methods=["POST"])
     def set_tags(self, request, *args, **kwargs):
         questionnaire = self.get_object()
@@ -208,7 +209,7 @@ class QuestionnaireViewSet(EMRModelViewSet):
         organizations: list[UUID4]
 
     @extend_schema(
-        request=QuestionnaireOrganizationUpdateSchema,
+        request=QuestionnaireOrganizationUpdateSchema, tags=["Questionnaire"]
     )
     @action(detail=True, methods=["POST"])
     def set_organizations(self, request, *args, **kwargs):
