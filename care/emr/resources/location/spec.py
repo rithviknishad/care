@@ -1,7 +1,9 @@
+import datetime
 from enum import Enum
 
 from pydantic import UUID4, model_validator
 
+from care.emr.models import Encounter, FacilityLocationEncounter
 from care.emr.models.location import FacilityLocation
 from care.emr.resources.base import EMRResource
 from care.emr.resources.common import Coding
@@ -101,6 +103,9 @@ class FacilityLocationListSpec(FacilityLocationSpec):
 
 
 class FacilityLocationRetrieveSpec(FacilityLocationListSpec):
+    created_by: dict | None = None
+    updated_by: dict | None = None
+
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
         super().perform_extra_serialization(mapping, obj)
@@ -108,3 +113,43 @@ class FacilityLocationRetrieveSpec(FacilityLocationListSpec):
             mapping["created_by"] = UserSpec.serialize(obj.created_by)
         if obj.updated_by:
             mapping["updated_by"] = UserSpec.serialize(obj.updated_by)
+
+
+class FacilityLocationEncounterBaseSpec(EMRResource):
+    __model__ = FacilityLocationEncounter
+    __exclude__ = ["encounter", "location"]
+
+    id: UUID4 | None = None
+
+
+class FacilityLocationEncounterCreateSpec(FacilityLocationEncounterBaseSpec):
+    encounter: UUID4
+    start_datetime: datetime.datetime
+
+    @model_validator(mode="after")
+    def validate_encounter(self):
+        if not Encounter.objects.filter(external_id=self.encounter).exists():
+            err = "Encounter not found"
+            raise ValueError(err)
+        return self
+
+    def perform_extra_deserialization(self, is_update, obj):
+        obj.encounter = Encounter.objects.get(external_id=self.encounter)
+
+
+class FacilityLocationEncounterUpdateSpec(FacilityLocationEncounterBaseSpec):
+    start_datetime: datetime.datetime
+    end_datetime: datetime.datetime
+
+
+class FacilityLocationEncounterReadSpec(FacilityLocationEncounterBaseSpec):
+    encounter: UUID4
+    start_datetime: datetime.datetime
+    end_datetime: datetime.datetime | None = None
+
+    created_by: dict | None = None
+    updated_by: dict | None = None
+
+    @classmethod
+    def perform_extra_serialization(cls, mapping, obj):
+        cls.serialize_audit_users(mapping, obj)

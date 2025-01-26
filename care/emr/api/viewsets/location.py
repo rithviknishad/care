@@ -5,8 +5,20 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from care.emr.api.viewsets.base import EMRModelViewSet
-from care.emr.models import Encounter, FacilityLocation, FacilityLocationOrganization
+from care.emr.api.viewsets.base import (
+    EMRBaseViewSet,
+    EMRCreateMixin,
+    EMRListMixin,
+    EMRModelViewSet,
+    EMRRetrieveMixin,
+    EMRUpdateMixin,
+)
+from care.emr.models import (
+    Encounter,
+    FacilityLocation,
+    FacilityLocationEncounter,
+    FacilityLocationOrganization,
+)
 from care.emr.models.organization import FacilityOrganization, FacilityOrganizationUser
 from care.emr.resources.facility_organization.spec import FacilityOrganizationReadSpec
 from care.emr.resources.location.spec import (
@@ -190,3 +202,47 @@ class FacilityLocationViewSet(EMRModelViewSet):
         ):
             raise PermissionDenied("You do not have permission to update encounter")
         # TODO, Association models yet to be built
+
+
+class FacilityLocationEncounterFilter(filters.FilterSet):
+    encounter = filters.UUIDFilter(field_name="encounter__external_id")
+
+
+class FacilityLocationEncounterViewSet(
+    EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
+):
+    """
+    TODO Authz for encounter creates
+    TODO Update encounter model when creates are done
+    TODO check for conflicts in datetime
+    TODO Add locks when a bed is occupied
+    TODO detect end dates added to encounter and remove association with encounter
+    TODO encounter lists must also check the location based access now
+    """
+
+    database_model = FacilityLocationEncounter
+    pydantic_model = None
+    pydantic_read_model = None
+    pydantic_retrieve_model = None
+    pydantic_update_model = None
+    filterset_class = FacilityLocationEncounterFilter
+    filter_backends = [filters.DjangoFilterBackend]
+
+    def get_facility_obj(self):
+        return get_object_or_404(
+            Facility, external_id=self.kwargs["facility_external_id"]
+        )
+
+    def get_location_obj(self):
+        return get_object_or_404(
+            FacilityLocation, external_id=self.kwargs["location_external_id"]
+        )
+
+    def get_queryset(self):
+        location = self.get_location_obj()
+        facility = self.get_facility_obj()
+        if not AuthorizationController.call(
+            "can_list_facility_location_obj", self.request.user, facility, location
+        ):
+            raise PermissionDenied("You do not have permission to given location")
+        return FacilityLocationEncounter.objects.filter(location=location)

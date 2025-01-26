@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 
-from care.emr.models import EMRBaseModel, FacilityOrganization
+from care.emr.models import EMRBaseModel, Encounter, FacilityOrganization
 from config.celery_app import app
 
 
@@ -129,6 +129,17 @@ class FacilityLocationOrganization(EMRBaseModel):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         handle_cascade.delay(self.location.id)
+
+
+class FacilityLocationEncounter(EMRBaseModel):
+    """
+    This relation denotes how a bed was associated to an encounter
+    """
+
+    location = models.ForeignKey(FacilityLocation, on_delete=models.CASCADE)
+    encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField(default=None, null=True, blank=True)
 
 
 @app.task
