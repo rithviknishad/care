@@ -9,20 +9,24 @@ from care.emr.registries.system_questionnaire.system_questionnaire import (
 from care.emr.resources.medication.statement.spec import (
     MedicationStatementReadSpec,
     MedicationStatementSpec,
+    MedicationStatementUpdateSpec,
 )
 from care.emr.resources.questionnaire.spec import SubjectType
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 class MedicationStatementFilter(filters.FilterSet):
     encounter = filters.UUIDFilter(field_name="encounter__external_id")
 
 
+@generate_swagger_schema_decorator
 class MedicationStatementViewSet(
     EncounterBasedAuthorizationBase, EMRQuestionnaireResponseMixin, EMRModelViewSet
 ):
     database_model = MedicationStatement
     pydantic_model = MedicationStatementSpec
     pydantic_read_model = MedicationStatementReadSpec
+    pydantic_update_model = MedicationStatementUpdateSpec
     questionnaire_type = "medication_statement"
     questionnaire_title = "Medication Statement"
     questionnaire_description = "Medication Statement"

@@ -146,13 +146,14 @@ class EMRUpdateMixin:
                     updated_by=self.request.user,
                 )
 
-    def clean_update_data(self, request_data):
+    def clean_update_data(self, request_data, keep_fields: set | None = None):
         if type(request_data) is list:
             return request_data
-        request_data.pop("id", None)
-        request_data.pop("external_id", None)
-        request_data.pop("patient", None)
-        request_data.pop("encounter", None)
+        ignored_fields = {"id", "external_id", "patient", "encounter"}
+        if keep_fields:
+            ignored_fields = ignored_fields - set(keep_fields)
+        for field in ignored_fields:
+            request_data.pop(field, None)
         return request_data
 
     def update(self, request, *args, **kwargs):
@@ -229,6 +230,7 @@ class EMRBaseViewSet(GenericViewSet):
     pydantic_retrieve_model: EMRResource = None
     database_model: EMRBaseModel = None
     lookup_field = "external_id"
+    tags = [__name__]
 
     def get_exception_handler(self):
         return emr_exception_handler

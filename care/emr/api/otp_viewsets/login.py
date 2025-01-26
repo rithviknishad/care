@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from pydantic import BaseModel, Field, field_validator
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 
 from care.emr.api.viewsets.base import EMRBaseViewSet
 from care.facility.models.patient import PatientMobileOTP
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 from care.utils.models.validators import mobile_validator
 from care.utils.sms.send_sms import send_sms
 from config.patient_otp_token import PatientToken
@@ -41,10 +43,14 @@ class OTPLoginSpec(OTPLoginRequestSpec):
     otp: str = Field(min_length=settings.OTP_LENGTH, max_length=settings.OTP_LENGTH)
 
 
+@generate_swagger_schema_decorator
 class OTPLoginView(EMRBaseViewSet):
     authentication_classes = []
     permission_classes = []
 
+    @extend_schema(
+        request=OTPLoginRequestSpec,
+    )
     @action(detail=False, methods=["POST"])
     def send(self, request):
         data = OTPLoginRequestSpec(**request.data)
@@ -76,6 +82,9 @@ class OTPLoginView(EMRBaseViewSet):
         otp_obj.save()
         return Response({"otp": "generated"})
 
+    @extend_schema(
+        request=OTPLoginSpec,
+    )
     @action(detail=False, methods=["POST"])
     def login(self, request):
         data = OTPLoginSpec(**request.data)

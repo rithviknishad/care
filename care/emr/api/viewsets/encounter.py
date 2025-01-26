@@ -47,6 +47,7 @@ from care.emr.tasks.discharge_summary import (
 )
 from care.facility.models import Facility
 from care.security.authorization import AuthorizationController
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 class LiveFilter(filters.CharFilter):
@@ -78,6 +79,7 @@ class EncounterFilters(filters.FilterSet):
     live = LiveFilter()
 
 
+@generate_swagger_schema_decorator
 class EncounterViewSet(
     EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
 ):
@@ -175,6 +177,10 @@ class EncounterViewSet(
     class EncounterOrganizationManageSpec(BaseModel):
         organization: UUID4
 
+    @extend_schema(
+        request=EncounterOrganizationManageSpec,
+        responses={200: FacilityOrganizationReadSpec},
+    )
     @action(detail=True, methods=["POST"])
     def organizations_add(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -195,6 +201,9 @@ class EncounterViewSet(
         )
         return Response(FacilityOrganizationReadSpec.serialize(organization).to_json())
 
+    @extend_schema(
+        request=EncounterOrganizationManageSpec,
+    )
     @action(detail=True, methods=["DELETE"])
     def organizations_remove(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -213,7 +222,7 @@ class EncounterViewSet(
         EncounterOrganization.objects.filter(
             encounter=instance, organization=organization
         ).delete()
-        return Response({}, status=204)
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
 
     def _check_discharge_summary_access(self, encounter):
         if not AuthorizationController.call(
@@ -284,6 +293,9 @@ class EncounterViewSet(
             django_validate_email(value)
             return value
 
+    @extend_schema(
+        request=EmailDischargeSummarySpec,
+    )
     @action(detail=True, methods=["POST"])
     def email_discharge_summary(self, request, *args, **kwargs):
         encounter = self.get_object()

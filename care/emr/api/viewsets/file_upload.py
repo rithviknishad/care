@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django_filters import rest_framework as filters
+from drf_spectacular.utils import extend_schema
 from pydantic import BaseModel
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -22,6 +23,7 @@ from care.emr.resources.file_upload.spec import (
     FileUploadUpdateSpec,
 )
 from care.security.authorization import AuthorizationController
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 
 
 def file_authorizer(user, file_type, associating_id, permission):
@@ -57,6 +59,7 @@ class FileUploadFilter(filters.FilterSet):
     is_archived = filters.BooleanFilter(field_name="is_archived")
 
 
+@generate_swagger_schema_decorator
 class FileUploadViewSet(
     EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
 ):
@@ -110,6 +113,7 @@ class FileUploadViewSet(
         file_authorizer(self.request.user, obj.file_type, obj.associating_id, "read")
         return super().get_queryset()
 
+    @extend_schema(responses={200: FileUploadListSpec})
     @action(detail=True, methods=["POST"])
     def mark_upload_completed(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -121,6 +125,10 @@ class FileUploadViewSet(
     class ArchiveRequestSpec(BaseModel):
         archive_reason: str
 
+    @extend_schema(
+        request=ArchiveRequestSpec,
+        responses={200: FileUploadListSpec},
+    )
     @action(detail=True, methods=["POST"])
     def archive(self, request, *args, **kwargs):
         obj = self.get_object()

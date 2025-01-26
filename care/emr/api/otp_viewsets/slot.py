@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from pydantic import UUID4, BaseModel
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -18,6 +19,7 @@ from care.emr.resources.scheduling.slot.spec import (
     TokenBookingReadSpec,
     TokenSlotBaseSpec,
 )
+from care.utils.decorators.schema_decorator import generate_swagger_schema_decorator
 from config.patient_otp_authentication import (
     JWTTokenPatientAuthentication,
     OTPAuthenticatedPermission,
@@ -33,12 +35,16 @@ class CancelAppointmentSpec(BaseModel):
     appointment: UUID4
 
 
+@generate_swagger_schema_decorator
 class OTPSlotViewSet(EMRRetrieveMixin, EMRBaseViewSet):
     authentication_classes = [JWTTokenPatientAuthentication]
     permission_classes = [OTPAuthenticatedPermission]
     database_model = TokenSlot
     pydantic_read_model = TokenSlotBaseSpec
 
+    @extend_schema(
+        request=SlotsForDayRequestSpec,
+    )
     @action(detail=False, methods=["POST"])
     def get_slots_for_day(self, request, *args, **kwargs):
         request_data = SlotsForDayRequestSpec(**request.data)
@@ -46,6 +52,9 @@ class OTPSlotViewSet(EMRRetrieveMixin, EMRBaseViewSet):
             request_data.facility, request.data
         )
 
+    @extend_schema(
+        request=AppointmentBookingSpec,
+    )
     @action(detail=True, methods=["POST"])
     def create_appointment(self, request, *args, **kwargs):
         request_data = AppointmentBookingSpec(**request.data)
@@ -57,6 +66,9 @@ class OTPSlotViewSet(EMRRetrieveMixin, EMRBaseViewSet):
             self.get_object(), request.data, None
         )
 
+    @extend_schema(
+        request=CancelAppointmentSpec,
+    )
     @action(detail=False, methods=["POST"])
     def cancel_appointment(self, request, *args, **kwargs):
         request_data = CancelAppointmentSpec(**request.data)
