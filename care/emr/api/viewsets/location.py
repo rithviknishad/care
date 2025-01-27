@@ -31,6 +31,8 @@ from care.emr.resources.location.spec import (
     FacilityLocationRetrieveSpec,
     FacilityLocationUpdateSpec,
     FacilityLocationWriteSpec,
+    LocationAvailabilityStatusChoices,
+    LocationEncounterAvailabilityStatusChoices,
 )
 from care.facility.models import Facility
 from care.security.authorization import AuthorizationController
@@ -249,7 +251,8 @@ class FacilityLocationEncounterViewSet(
         Reset encounters to the right location.
         """
         active_location_encounter = FacilityLocationEncounter.objects.filter(
-            location=location, end_datetime__is_null=True
+            location=location,
+            status=LocationEncounterAvailabilityStatusChoices.active.value,
         ).first()
         all_encounters = Encounter.objects.filter(current_location=location)
         if active_location_encounter:
@@ -259,6 +262,23 @@ class FacilityLocationEncounterViewSet(
                 id=active_location_encounter.encounter_id
             )
         all_encounters.update(current_location=None)
+
+    def reset_location_availability_status(self, location):
+        """
+        Reset location availability status to the right status.
+        """
+        if FacilityLocationEncounter.objects.filter(
+            location=location,
+            status=LocationEncounterAvailabilityStatusChoices.active.value,
+        ).exists():
+            location.availability_status = (
+                LocationAvailabilityStatusChoices.unavailable.value
+            )
+        else:
+            location.availability_status = (
+                LocationAvailabilityStatusChoices.available.value
+            )
+        location.save(update_fields=["availability_status"])
 
     def authorize_create(self, instance):
         facility = self.get_facility_obj()
@@ -280,9 +300,11 @@ class FacilityLocationEncounterViewSet(
     def perform_create(self, instance):
         location = self.get_location_obj()
         with Lock(f"facility_location:{location.id}"):
+            instance.location = location
             self._validate_data(instance)
             super().perform_create(instance)
             self.reset_encounter_location_association(location)
+            self.reset_location_availability_status(location)
 
     def perform_update(self, instance):
         location = self.get_location_obj()
@@ -291,42 +313,78 @@ class FacilityLocationEncounterViewSet(
             self._validate_data(instance, self.get_object())
             super().perform_update(instance)
             self.reset_encounter_location_association(location)
+            self.reset_location_availability_status(location)
 
     def perform_destroy(self, instance):
         super().perform_destroy(instance)
-        self.reset_encounter_location_association(self.get_location_obj())
+        self.reset_encounter_location_association(instance.location)
+        self.reset_location_availability_status(instance.location)
 
     def _validate_data(self, instance, model_obj=None):
         """
         This method will be called separately to maintain a lock when the validation is being performed
         """
         location = self.get_location_obj()
+        if location.mode == FacilityLocationModeChoices.instance.value:
+            raise ValidationError("Cannot assign encounters for Location instances")
+
         start_datetime = instance.start_datetime
-        end_datetime = instance.end_datetime
         base_qs = FacilityLocationEncounter.objects.filter(location=location)
         if model_obj:
             # Validate if the current dates are not in conflict with other dates
-            end_datetime = instance.end_datetime
+            end_datetime = model_obj.end_datetime
             base_qs = base_qs.exclude(id=model_obj.id)
+            status = model_obj.status
+        else:
+            status = instance.status
+            end_datetime = instance.end_datetime
+        # Validate end time is greater than start time
+        if end_datetime and start_datetime > end_datetime:
+            raise ValidationError("End Datetime should be greater than Start Datetime")
+        # Completed, reserved or planned status should have end_datetime
+        if (
+            status
+            in (
+                LocationEncounterAvailabilityStatusChoices.completed.value,
+                LocationEncounterAvailabilityStatusChoices.reserved.value,
+                LocationEncounterAvailabilityStatusChoices.planned.value,
+            )
+            and not end_datetime
+        ):
+            raise ValidationError("End Datetime is required for completed status")
+
+        # Ensure that there is no conflict in the schedule
+        if end_datetime:
+            if base_qs.filter(
+                start_datetime__lte=end_datetime, end_datetime__gte=start_datetime
+            ).exists():
+                raise ValidationError("Conflict in schedule")
+        else:
+            if base_qs.filter(
+                start_datetime__gte=start_datetime
+            ).exists():
+                raise ValidationError("Conflict in schedule")
+
+        # Ensure that there is no other association at this point
+        if (
+            status == LocationEncounterAvailabilityStatusChoices.active.value
+            and base_qs.filter(
+                status=LocationEncounterAvailabilityStatusChoices.active.value
+            ).exists()
+        ):
+            raise ValidationError(
+                "Another active encounter already exists for this location"
+            )
+
+        # Don't allow changes to the status once the status has reached completed
 
         if (
-            not model_obj
-            or model_obj
-            and model_obj.end_datetime
-            and not instance.end_datetime
-        ) and base_qs.filter(end_datetime__isnull=True).exists():
-            raise ValidationError("Location is not available")
-
-        if end_datetime and end_datetime < start_datetime:
-            raise ValidationError("End Date cannot be before Start Date")
-        if not end_datetime:
-            # Check if there are any other encounters that are open after this
-            if base_qs.filter(start_datetime__gte=start_datetime):
-                raise ValidationError("Conflict in schedule")
-        elif base_qs.filter(
-            start_datetime__lte=end_datetime, end_datetime__gt=start_datetime
-        ).exists():
-            raise ValidationError("Conflict in schedule")
+            model_obj
+            and model_obj.status
+            == LocationEncounterAvailabilityStatusChoices.completed.value
+            and instance.status != model_obj.status
+        ):
+            raise ValidationError("Cannot change status after marking completed")
 
     def get_queryset(self):
         location = self.get_location_obj()

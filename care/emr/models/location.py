@@ -12,6 +12,9 @@ class FacilityLocation(EMRBaseModel):
     status = models.CharField(max_length=255)
     operational_status = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
+    availability_status = models.CharField(
+        max_length=25
+    )  # Populated from FacilityLocationEncounter
     description = models.CharField(max_length=255)
     mode = models.CharField(max_length=255)
     location_type = models.JSONField(default=dict, null=True, blank=True)
@@ -136,6 +139,7 @@ class FacilityLocationEncounter(EMRBaseModel):
     This relation denotes how a bed was associated to an encounter
     """
 
+    status = models.CharField(max_length=25)
     location = models.ForeignKey(FacilityLocation, on_delete=models.CASCADE)
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE)
     start_datetime = models.DateTimeField()

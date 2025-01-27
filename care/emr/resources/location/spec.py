@@ -10,6 +10,18 @@ from care.emr.resources.common import Coding
 from care.emr.resources.user.spec import UserSpec
 
 
+class LocationEncounterAvailabilityStatusChoices(str, Enum):
+    planned = "planned"
+    active = "active"
+    reserved = "reserved"
+    completed = "completed"
+
+
+class LocationAvailabilityStatusChoices(str, Enum):
+    available = "available"
+    unavailable = "unavailable"
+
+
 class StatusChoices(str, Enum):
     active = "active"
     inactive = "inactive"
@@ -77,24 +89,26 @@ class FacilityLocationWriteSpec(FacilityLocationSpec):
     def validate_parent_organization(self):
         if (
             self.parent
-            and not FacilityLocation.objects.filter(external_id=self.parent).exists()
+            and not FacilityLocation.objects.filter(
+                external_id=self.parent, mode=FacilityLocationModeChoices.instance.value
+            ).exists()
         ):
             err = "Parent not found"
             raise ValueError(err)
         return self
 
     def perform_extra_deserialization(self, is_update, obj):
-        if not is_update:
-            if self.parent:
-                obj.parent = FacilityLocation.objects.get(external_id=self.parent)
-            else:
-                obj.parent = None
-
+        if self.parent:
+            obj.parent = FacilityLocation.objects.get(external_id=self.parent)
+        else:
+            obj.parent = None
+        obj.availability_status = LocationAvailabilityStatusChoices.available.value
 
 class FacilityLocationListSpec(FacilityLocationSpec):
     parent: dict
     mode: str
     has_children: bool
+    availability_status: str
 
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
@@ -123,8 +137,10 @@ class FacilityLocationEncounterBaseSpec(EMRResource):
 
 
 class FacilityLocationEncounterCreateSpec(FacilityLocationEncounterBaseSpec):
+    status: LocationEncounterAvailabilityStatusChoices
     encounter: UUID4
     start_datetime: datetime.datetime
+    end_datetime: datetime.datetime | None = None
 
     @model_validator(mode="after")
     def validate_encounter(self):
@@ -138,6 +154,8 @@ class FacilityLocationEncounterCreateSpec(FacilityLocationEncounterBaseSpec):
 
 
 class FacilityLocationEncounterUpdateSpec(FacilityLocationEncounterBaseSpec):
+    status: LocationEncounterAvailabilityStatusChoices
+
     start_datetime: datetime.datetime
     end_datetime: datetime.datetime | None = None
 
@@ -146,6 +164,7 @@ class FacilityLocationEncounterReadSpec(FacilityLocationEncounterBaseSpec):
     encounter: UUID4
     start_datetime: datetime.datetime
     end_datetime: datetime.datetime | None = None
+    status : str
 
     created_by: dict | None = None
     updated_by: dict | None = None

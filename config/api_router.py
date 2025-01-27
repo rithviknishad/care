@@ -25,7 +25,7 @@ from care.emr.api.viewsets.facility_organization import (
     FacilityOrganizationViewSet,
 )
 from care.emr.api.viewsets.file_upload import FileUploadViewSet
-from care.emr.api.viewsets.location import FacilityLocationViewSet
+from care.emr.api.viewsets.location import FacilityLocationViewSet, FacilityLocationEncounterViewSet
 from care.emr.api.viewsets.medication_administration import (
     MedicationAdministrationViewSet,
 )
@@ -162,6 +162,14 @@ facility_nested_router.register(
     basename="location",
 )
 
+facility_location_nested_router = NestedSimpleRouter(facility_nested_router, r"location", lookup="location")
+
+facility_location_nested_router.register(
+    r"association",
+    FacilityLocationEncounterViewSet,
+    basename="association",
+)
+
 router.register("patient", PatientViewSet, basename="patient")
 patient_nested_router = NestedSimpleRouter(router, r"patient", lookup="patient")
 
@@ -229,4 +237,6 @@ urlpatterns = [
     path("", include(resource_nested_router.urls)),
     path("", include(organization_nested_router.urls)),
     path("", include(facility_organization_nested_router.urls)),
+    path("", include(facility_location_nested_router.urls)),
+
 ]
