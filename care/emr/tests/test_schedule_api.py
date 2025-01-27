@@ -213,16 +213,12 @@ class TestScheduleViewSet(CareAPITestBase):
         role = self.create_role_with_permissions(permissions)
         self.attach_role_facility_organization_user(self.organization, self.user, role)
 
-        # First create a schedule
-        schedule = self.create_schedule()
-
-        # Then update it
         updated_data = {
             "name": "Updated Schedule Name",
-            "valid_from": schedule.valid_from,
-            "valid_to": schedule.valid_to,
+            "valid_from": self.schedule.valid_from,
+            "valid_to": self.schedule.valid_to,
         }
-        update_url = self._get_schedule_url(schedule.external_id)
+        update_url = self._get_schedule_url(self.schedule.external_id)
         response = self.client.put(update_url, updated_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], "Updated Schedule Name")
@@ -236,14 +232,12 @@ class TestScheduleViewSet(CareAPITestBase):
         role = self.create_role_with_permissions(permissions)
         self.attach_role_facility_organization_user(self.organization, self.user, role)
 
-        schedule = self.create_schedule()
-
         updated_data = {
             "name": "Updated Schedule Name",
-            "valid_from": schedule.valid_from,
-            "valid_to": schedule.valid_to,
+            "valid_from": self.schedule.valid_from,
+            "valid_to": self.schedule.valid_to,
         }
-        update_url = self._get_schedule_url(schedule.external_id)
+        update_url = self._get_schedule_url(self.schedule.external_id)
         response = self.client.put(update_url, updated_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -257,10 +251,15 @@ class TestScheduleViewSet(CareAPITestBase):
         role = self.create_role_with_permissions(permissions)
         self.attach_role_facility_organization_user(self.organization, self.user, role)
 
-        schedule = self.create_schedule()
-        delete_url = self._get_schedule_url(schedule.external_id)
+        delete_url = self._get_schedule_url(self.schedule.external_id)
         response = self.client.delete(delete_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.availability.refresh_from_db()
+        self.slot.refresh_from_db()
+
+        self.assertTrue(self.availability.deleted)
+        self.assertTrue(self.slot.deleted)
 
     def test_delete_schedule_without_permissions(self):
         """Users without can_write_user_schedule permission cannot delete schedules."""
@@ -271,8 +270,7 @@ class TestScheduleViewSet(CareAPITestBase):
         role = self.create_role_with_permissions(permissions)
         self.attach_role_facility_organization_user(self.organization, self.user, role)
 
-        schedule = self.create_schedule()
-        delete_url = self._get_schedule_url(schedule.external_id)
+        delete_url = self._get_schedule_url(self.schedule.external_id)
         response = self.client.delete(delete_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
