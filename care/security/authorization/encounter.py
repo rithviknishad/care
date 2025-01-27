@@ -22,7 +22,7 @@ class EncounterAccess(AuthorizationHandler):
         """
         Check if the user has permission to read encounter under this facility
         """
-        orgs=[*encounter.facility_organization_cache]
+        orgs = [*encounter.facility_organization_cache]
         if encounter.current_location:
             orgs.extend(encounter.current_location.facility_organization_cache)
 
@@ -40,7 +40,7 @@ class EncounterAccess(AuthorizationHandler):
             # Cannot write to a closed encounter
             return False
 
-        orgs=[*encounter.facility_organization_cache]
+        orgs = [*encounter.facility_organization_cache]
         if encounter.current_location:
             orgs.extend(encounter.current_location.facility_organization_cache)
 
@@ -57,7 +57,7 @@ class EncounterAccess(AuthorizationHandler):
         if encounter.status in COMPLETED_CHOICES:
             # Cannot write to a closed encounter
             return False
-        orgs=[*encounter.facility_organization_cache]
+        orgs = [*encounter.facility_organization_cache]
         if encounter.current_location:
             orgs.extend(encounter.current_location.facility_organization_cache)
         return self.check_permission_in_facility_organization(
@@ -77,7 +77,10 @@ class EncounterAccess(AuthorizationHandler):
                 user=user, organization__facility=facility, role_id__in=roles
             ).values_list("organization_id", flat=True)
         )
-        return qs.filter(Q(facility_organization_cache__overlap=organization_ids) | Q(current_location__facility_organization_cache__overlap=organization_ids))
+        return qs.filter(
+            Q(facility_organization_cache__overlap=organization_ids)
+            | Q(current_location__facility_organization_cache__overlap=organization_ids)
+        )
 
 
 AuthorizationController.register_internal_controller(EncounterAccess)

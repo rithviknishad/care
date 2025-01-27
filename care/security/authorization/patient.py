@@ -18,7 +18,10 @@ class PatientAccess(AuthorizationHandler):
         encounters = (
             Encounter.objects.filter(patient=patient)
             .exclude(status__in=COMPLETED_CHOICES)
-            .values_list("facility_organization_cache" , "current_location__facility_organization_cache")
+            .values_list(
+                "facility_organization_cache",
+                "current_location__facility_organization_cache",
+            )
         )
         encounter_set = set()
         for encounter in encounters:

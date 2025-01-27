@@ -126,7 +126,14 @@ class EncounterViewSet(
         qs = (
             super()
             .get_queryset()
-            .select_related("patient", "facility", "appointment","current_location" , "created_by" , "updated_by" )
+            .select_related(
+                "patient",
+                "facility",
+                "appointment",
+                "current_location",
+                "created_by",
+                "updated_by",
+            )
             .order_by("-created_date")
         )
         if (
