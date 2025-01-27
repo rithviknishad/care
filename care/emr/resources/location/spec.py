@@ -172,4 +172,5 @@ class FacilityLocationEncounterReadSpec(FacilityLocationEncounterBaseSpec):
 
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
+        mapping["id"] = obj.external_id
         cls.serialize_audit_users(mapping, obj)
