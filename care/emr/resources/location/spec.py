@@ -139,7 +139,7 @@ class FacilityLocationEncounterCreateSpec(FacilityLocationEncounterBaseSpec):
 
 class FacilityLocationEncounterUpdateSpec(FacilityLocationEncounterBaseSpec):
     start_datetime: datetime.datetime
-    end_datetime: datetime.datetime
+    end_datetime: datetime.datetime | None = None
 
 
 class FacilityLocationEncounterReadSpec(FacilityLocationEncounterBaseSpec):
