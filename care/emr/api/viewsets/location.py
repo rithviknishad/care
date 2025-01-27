@@ -359,11 +359,8 @@ class FacilityLocationEncounterViewSet(
                 start_datetime__lte=end_datetime, end_datetime__gte=start_datetime
             ).exists():
                 raise ValidationError("Conflict in schedule")
-        else:
-            if base_qs.filter(
-                start_datetime__gte=start_datetime
-            ).exists():
-                raise ValidationError("Conflict in schedule")
+        elif base_qs.filter(start_datetime__gte=start_datetime).exists():
+            raise ValidationError("Conflict in schedule")
 
         # Ensure that there is no other association at this point
         if (

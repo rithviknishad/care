@@ -104,6 +104,7 @@ class FacilityLocationWriteSpec(FacilityLocationSpec):
             obj.parent = None
         obj.availability_status = LocationAvailabilityStatusChoices.available.value
 
+
 class FacilityLocationListSpec(FacilityLocationSpec):
     parent: dict
     mode: str
@@ -164,7 +165,7 @@ class FacilityLocationEncounterReadSpec(FacilityLocationEncounterBaseSpec):
     encounter: UUID4
     start_datetime: datetime.datetime
     end_datetime: datetime.datetime | None = None
-    status : str
+    status: str
 
     created_by: dict | None = None
     updated_by: dict | None = None
