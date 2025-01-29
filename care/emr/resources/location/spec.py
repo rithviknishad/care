@@ -28,7 +28,7 @@ class StatusChoices(str, Enum):
     unknown = "unknown"
 
 
-class FacilityLocationStatusChoices(str, Enum):
+class FacilityLocationOperationalStatusChoices(str, Enum):
     C = "C"
     H = "H"
     O = "O"  # noqa E741
@@ -69,7 +69,7 @@ class FacilityLocationBaseSpec(EMRResource):
 
 class FacilityLocationSpec(FacilityLocationBaseSpec):
     status: StatusChoices
-    operational_status: FacilityLocationStatusChoices
+    operational_status: FacilityLocationOperationalStatusChoices
     name: str
     description: str
     location_type: Coding | None = None
