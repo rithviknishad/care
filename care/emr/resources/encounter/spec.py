@@ -17,6 +17,7 @@ from care.emr.resources.encounter.constants import (
 )
 from care.emr.resources.facility.spec import FacilityBareMinimumSpec
 from care.emr.resources.facility_organization.spec import FacilityOrganizationReadSpec
+from care.emr.resources.location.spec import FacilityLocationListSpec
 from care.emr.resources.patient.spec import PatientListSpec
 from care.emr.resources.scheduling.slot.spec import TokenBookingReadSpec
 from care.emr.resources.user.spec import UserSpec
@@ -110,6 +111,7 @@ class EncounterRetrieveSpec(EncounterListSpec):
     created_by: dict = {}
     updated_by: dict = {}
     organizations: list[dict] = []
+    current_location: dict = {}
 
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
@@ -123,6 +125,10 @@ class EncounterRetrieveSpec(EncounterListSpec):
             FacilityOrganizationReadSpec.serialize(encounter_org.organization).to_json()
             for encounter_org in organizations
         ]
+        if obj.current_location:
+            mapping["current_location"] = FacilityLocationListSpec.serialize(
+                obj.current_location
+            ).to_json()
         if obj.created_by:
             mapping["created_by"] = UserSpec.serialize(obj.created_by)
         if obj.updated_by:
