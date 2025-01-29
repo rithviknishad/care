@@ -44,7 +44,13 @@ class HospitalizationSpec(BaseModel):
 
 class EncounterSpecBase(EMRResource):
     __model__ = Encounter
-    __exclude__ = ["patient", "organizations", "facility", "appointment"]
+    __exclude__ = [
+        "patient",
+        "organizations",
+        "facility",
+        "appointment",
+        "current_location",
+    ]
 
     id: UUID4 = None
     status: StatusChoices
@@ -111,7 +117,7 @@ class EncounterRetrieveSpec(EncounterListSpec):
     created_by: dict = {}
     updated_by: dict = {}
     organizations: list[dict] = []
-    current_location: dict = {}
+    current_location: dict | None = None
 
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
@@ -125,6 +131,7 @@ class EncounterRetrieveSpec(EncounterListSpec):
             FacilityOrganizationReadSpec.serialize(encounter_org.organization).to_json()
             for encounter_org in organizations
         ]
+        mapping["current_location"] = None
         if obj.current_location:
             mapping["current_location"] = FacilityLocationListSpec.serialize(
                 obj.current_location
