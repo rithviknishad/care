@@ -90,7 +90,7 @@ class FacilityLocationWriteSpec(FacilityLocationSpec):
         if (
             self.parent
             and not FacilityLocation.objects.filter(
-                external_id=self.parent, mode=FacilityLocationModeChoices.instance.value
+                external_id=self.parent, mode=FacilityLocationModeChoices.kind.value
             ).exists()
         ):
             err = "Parent not found"
