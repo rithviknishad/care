@@ -62,7 +62,7 @@ class FacilityLocationFormChoices(str, Enum):
 
 class FacilityLocationBaseSpec(EMRResource):
     __model__ = FacilityLocation
-    __exclude__ = ["parent", "facility", "organizations"]
+    __exclude__ = ["parent", "facility", "organizations", "root_location"]
 
     id: UUID4 | None = None
 
