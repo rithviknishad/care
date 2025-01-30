@@ -78,7 +78,9 @@ class FacilityLocation(EMRBaseModel):
         return queryset.exists()
 
     def sync_organization_cache(self):
-        orgs = set(self.parent.facility_organization_cache)
+        orgs = set()
+        if self.parent:
+            orgs = orgs.union(set(self.parent.facility_organization_cache))
         for (
             facility_location_organization
         ) in FacilityLocationOrganization.objects.filter(location=self):
