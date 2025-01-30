@@ -1,4 +1,5 @@
 from django_filters import rest_framework as filters
+from drf_spectacular.utils import extend_schema
 from pydantic import UUID4, BaseModel
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -149,6 +150,10 @@ class FacilityLocationViewSet(EMRModelViewSet):
         ):
             raise PermissionDenied("You do not have permission to given organizations")
 
+    @extend_schema(
+        request=FacilityLocationOrganizationManageSpec,
+        responses={200: FacilityOrganizationReadSpec},
+    )
     @action(detail=True, methods=["POST"])
     def organizations_add(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -168,6 +173,9 @@ class FacilityLocationViewSet(EMRModelViewSet):
         )
         return Response(FacilityOrganizationReadSpec.serialize(organization).to_json())
 
+    @extend_schema(
+        request=FacilityLocationOrganizationManageSpec, responses={204: None}
+    )
     @action(detail=True, methods=["POST"])
     def organizations_remove(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -192,6 +200,7 @@ class FacilityLocationViewSet(EMRModelViewSet):
     class FacilityLocationEncounterAssignSpec(BaseModel):
         encounter: UUID4
 
+    @extend_schema(request=FacilityLocationEncounterAssignSpec)
     @action(detail=True, methods=["POST"])
     def associate_encounter(self, request, *args, **kwargs):
         instance = self.get_object()
