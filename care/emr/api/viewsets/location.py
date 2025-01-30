@@ -183,7 +183,7 @@ class FacilityLocationViewSet(EMRModelViewSet):
         if not encounter_organization.exists():
             raise ValidationError("Organization does not exist")
         FacilityLocationOrganization.objects.filter(
-            encounter=instance, organization=organization
+            location=instance, organization=organization
         ).delete()
         instance.save()  # Recalculate Metadata
         instance.cascade_changes()  # Recalculate Metadata for children as well.

@@ -78,14 +78,14 @@ class FacilityLocation(EMRBaseModel):
         return queryset.exists()
 
     def sync_organization_cache(self):
-        orgs = set()
-        for encounter_organization in FacilityLocationOrganization.objects.filter(
-            location=self
-        ):
+        orgs = set(self.parent.facility_organization_cache)
+        for (
+            facility_location_organization
+        ) in FacilityLocationOrganization.objects.filter(location=self):
             orgs = orgs.union(
                 {
-                    *encounter_organization.organization.parent_cache,
-                    encounter_organization.organization.id,
+                    *facility_location_organization.organization.parent_cache,
+                    facility_location_organization.organization.id,
                 }
             )
 
@@ -152,6 +152,6 @@ def handle_cascade(base_location):
     Cascade changes to a location organization to all its children
     """
 
-    for child in FacilityLocation.objects.filter(parent_location_id=base_location):
+    for child in FacilityLocation.objects.filter(parent_id=base_location):
         child.save(update_fields=["cached_parent_json"])
         handle_cascade(child)
