@@ -195,7 +195,7 @@ class FacilityLocationViewSet(EMRModelViewSet):
         ).delete()
         instance.save()  # Recalculate Metadata
         instance.cascade_changes()  # Recalculate Metadata for children as well.
-        return Response({}, status=200)
+        return Response({})
 
     class FacilityLocationEncounterAssignSpec(BaseModel):
         encounter: UUID4
