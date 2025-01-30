@@ -174,7 +174,7 @@ class FacilityLocationViewSet(EMRModelViewSet):
         return Response(FacilityOrganizationReadSpec.serialize(organization).to_json())
 
     @extend_schema(
-        request=FacilityLocationOrganizationManageSpec, responses={204: None}
+        request=FacilityLocationOrganizationManageSpec, responses={200: None}
     )
     @action(detail=True, methods=["POST"])
     def organizations_remove(self, request, *args, **kwargs):
@@ -195,7 +195,7 @@ class FacilityLocationViewSet(EMRModelViewSet):
         ).delete()
         instance.save()  # Recalculate Metadata
         instance.cascade_changes()  # Recalculate Metadata for children as well.
-        return Response({}, status=204)
+        return Response({}, status=200)
 
     class FacilityLocationEncounterAssignSpec(BaseModel):
         encounter: UUID4
