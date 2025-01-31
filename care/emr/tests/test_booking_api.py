@@ -882,11 +882,7 @@ class TestSlotViewSetSlotStatsApis(CareAPITestBase):
         # verify all days are present
         date = from_date
         while date <= end_date:
-            self.assertContains(
-                response,
-                status_code=200,
-                text=date.strftime("%Y-%m-%d"),
-            )
+            self.assertContains(response, text=date.strftime("%Y-%m-%d"))
             date += timedelta(days=1)
 
         # verify booked slots and total slots from get slots for day matches heatmap
