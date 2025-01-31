@@ -9,6 +9,7 @@ concurrency:
 
 jobs:
   test:
+    name: Test
     uses: ./.github/workflows/reusable-test.yml
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
