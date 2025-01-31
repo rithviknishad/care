@@ -47,23 +47,11 @@ jobs:
           mkdir -p ${{ runner.temp }}/.buildx-cache-new
           mkdir -p ${{ runner.temp }}/.buildx-mounted-cache
 
-      - name: Bake docker images
-        uses: docker/bake-action@v5
-        with:
-          load: true
-          pull: true
-          set: |
-            *.cache-from=type=local,src=${{ runner.temp }}/.buildx-cache
-            *.cache-to=type=local,dest=${{ runner.temp }}/.buildx-cache-new,mode=max
-          files: docker-compose.yaml,docker-compose.local.yaml
-        env:
-          DOCKER_BUILD_SUMMARY: false
-
       - name: Build images
         run: |
           docker buildx build \
             --file docker/dev.Dockerfile \
-            --tag care:dev \
+            --tag care_local \
             --cache-from=type=local,src=${{ runner.temp }}/.buildx-cache \
             --cache-to=type=local,dest=${{ runner.temp }}/.buildx-cache-new,mode=max \
             --platform linux/arm64 \
