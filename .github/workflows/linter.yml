@@ -5,10 +5,6 @@ on:
     branches:
       - develop
       - staging
-  push:
-    branches:
-      - develop
-      - staging
   merge_group:
 
 jobs:
@@ -22,27 +18,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          cache: "pip"
 
       - run: |
           python -m pip install pre-commit
-          python -m pip freeze --local
-
-      - name: Restore pre-commit cache
-        id: cache-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: ~/.cache/pre-commit
-          key:  ${{ runner.os }}-${{ runner.arch }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
 
       - run: |
           pre-commit run --show-diff-on-failure --color=always \
           --from-ref ${{ github.event.pull_request.base.sha }} --to-ref ${{ github.event.pull_request.head.sha }}
-
-      - name: Save pre-commit cache
-        id: cache-save
-        if: ${{ steps.cache-restore.outputs.cache-hit != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/staging') }}
-        uses: actions/cache/save@v4
-        with:
-          path: ~/.cache/pre-commit
-          key: ${{ runner.os }}-${{ runner.arch }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
