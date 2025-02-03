@@ -211,10 +211,12 @@ class MedicationAdministrationSpec(BaseMedicationAdministrationSpec):
             obj.patient = obj.encounter.patient
             obj.request = MedicationRequest.objects.get(external_id=self.request)
 
+
 class MedicationAdministrationUpdateSpec(BaseMedicationAdministrationSpec):
     status: MedicationAdministrationStatus
     note: str | None = None
     occurrence_period_end: datetime | None = None
+
 
 class MedicationAdministrationReadSpec(BaseMedicationAdministrationSpec):
     created_by: UserSpec = dict

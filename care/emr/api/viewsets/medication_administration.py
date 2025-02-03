@@ -8,7 +8,8 @@ from care.emr.registries.system_questionnaire.system_questionnaire import (
 )
 from care.emr.resources.medication.administration.spec import (
     MedicationAdministrationReadSpec,
-    MedicationAdministrationSpec, MedicationAdministrationUpdateSpec,
+    MedicationAdministrationSpec,
+    MedicationAdministrationUpdateSpec,
 )
 from care.emr.resources.questionnaire.spec import SubjectType
 
