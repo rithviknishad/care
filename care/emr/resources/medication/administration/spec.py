@@ -142,10 +142,8 @@ class BaseMedicationAdministrationSpec(EMRResource):
     occurrence_period_start: datetime = Field(
         description="When the medication was administration started",
     )
-    occurrence_period_end: datetime | None = Field(
-        None,
-        description="When the medication administration ended. If not provided, it is assumed to be ongoing",
-    )
+    occurrence_period_end: datetime | None = None
+
     recorded: datetime | None = Field(
         None,
         description="When administration was recorded",
@@ -167,10 +165,7 @@ class BaseMedicationAdministrationSpec(EMRResource):
         description="The dosage of the medication",
     )
 
-    note: str | None = Field(
-        None,
-        description="Any additional notes about the medication",
-    )
+    note: str | None = None
 
 
 class MedicationAdministrationSpec(BaseMedicationAdministrationSpec):
@@ -216,6 +211,10 @@ class MedicationAdministrationSpec(BaseMedicationAdministrationSpec):
             obj.patient = obj.encounter.patient
             obj.request = MedicationRequest.objects.get(external_id=self.request)
 
+class MedicationAdministrationUpdateSpec(BaseMedicationAdministrationSpec):
+    status: MedicationAdministrationStatus
+    note: str | None = None
+    occurrence_period_end: datetime | None = None
 
 class MedicationAdministrationReadSpec(BaseMedicationAdministrationSpec):
     created_by: UserSpec = dict

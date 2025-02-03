@@ -8,7 +8,7 @@ from care.emr.registries.system_questionnaire.system_questionnaire import (
 )
 from care.emr.resources.medication.administration.spec import (
     MedicationAdministrationReadSpec,
-    MedicationAdministrationSpec,
+    MedicationAdministrationSpec, MedicationAdministrationUpdateSpec,
 )
 from care.emr.resources.questionnaire.spec import SubjectType
 
@@ -25,6 +25,7 @@ class MedicationAdministrationViewSet(
 ):
     database_model = MedicationAdministration
     pydantic_model = MedicationAdministrationSpec
+    pydantic_update_model = MedicationAdministrationUpdateSpec
     pydantic_read_model = MedicationAdministrationReadSpec
     questionnaire_type = "medication_administration"
     questionnaire_title = "Medication Administration"
