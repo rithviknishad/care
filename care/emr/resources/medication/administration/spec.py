@@ -212,7 +212,10 @@ class MedicationAdministrationSpec(BaseMedicationAdministrationSpec):
             obj.request = MedicationRequest.objects.get(external_id=self.request)
 
 
-class MedicationAdministrationUpdateSpec(BaseMedicationAdministrationSpec):
+class MedicationAdministrationUpdateSpec(EMRResource):
+    __model__ = MedicationAdministration
+    __exclude__ = ["patient", "encounter", "request"]
+
     status: MedicationAdministrationStatus
     note: str | None = None
     occurrence_period_end: datetime | None = None
