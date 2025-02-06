@@ -161,6 +161,17 @@ class FacilityLocationEncounterUpdateSpec(FacilityLocationEncounterBaseSpec):
     end_datetime: datetime.datetime | None = None
 
 
+class FacilityLocationEncounterListSpec(FacilityLocationEncounterBaseSpec):
+    encounter: UUID4
+    start_datetime: datetime.datetime
+    end_datetime: datetime.datetime | None = None
+    status: str
+
+    @classmethod
+    def perform_extra_serialization(cls, mapping, obj):
+        mapping["id"] = obj.external_id
+
+
 class FacilityLocationEncounterReadSpec(FacilityLocationEncounterBaseSpec):
     encounter: UUID4
     start_datetime: datetime.datetime
