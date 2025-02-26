@@ -73,6 +73,8 @@ class MetaArtifactViewSet(
     pydantic_model = MetaArtifactCreateSpec
     pydantic_retrieve_model = MetaArtifactCreateSpec
     pydantic_update_model = MetaArtifactUpdateSpec
+    fitlerset_class = MetaArtifactFilter
+    filter_backends = (filters.DjangoFilterBackend,)
 
     def authorize_create(self, instance):
         meta_artifact_authorizer(
