@@ -8,6 +8,7 @@ from care.emr.api.viewsets.base import (
     EMRListMixin,
     EMRRetrieveMixin,
     EMRUpdateMixin,
+    EMRUpsertMixin,
 )
 from care.emr.models import Encounter, Patient
 from care.emr.models.meta_artifact import MetaArtifact
@@ -43,7 +44,7 @@ def meta_artifact_authorizer(user, associating_type, associating_id, permission)
             allowed = AuthorizationController.call(
                 "can_write_patient_obj", user, patient_obj
             )
-    elif associating_type == MetaArtifactAssociatingTypeChoices.patient.value:
+    elif associating_type == MetaArtifactAssociatingTypeChoices.encounter.value:
         encounter_obj = get_object_or_404(Encounter, external_id=associating_id)
         if permission == "read":
             allowed = AuthorizationController.call(
@@ -61,7 +62,12 @@ def meta_artifact_authorizer(user, associating_type, associating_id, permission)
 
 
 class MetaArtifactViewSet(
-    EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet
+    EMRCreateMixin,
+    EMRRetrieveMixin,
+    EMRUpdateMixin,
+    EMRUpsertMixin,
+    EMRListMixin,
+    EMRBaseViewSet,
 ):
     database_model = MetaArtifact
     pydantic_model = MetaArtifactCreateSpec
