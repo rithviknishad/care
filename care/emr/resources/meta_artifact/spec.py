@@ -1,9 +1,11 @@
+from datetime import datetime
 from enum import Enum
 
 from pydantic import UUID4, field_validator
 
 from care.emr.models import MetaArtifact
 from care.emr.resources.base import EMRResource
+from care.emr.resources.user.spec import UserSpec
 
 
 class MetaArtifactAssociatingTypeChoices(str, Enum):
@@ -26,18 +28,22 @@ class MetaArtifactUpdateSpec(MetaArtifactBaseSpec):
     pass
 
 
-class MetaArtifactListSpec(MetaArtifactBaseSpec):
+class MetaArtifactReadSpec(MetaArtifactBaseSpec):
     associating_type: MetaArtifactAssociatingTypeChoices
     associating_id: UUID4
     object_type: MetaArtifactObjectTypeChoices
     name: str
+    created_date: datetime
+    modified_date: datetime
+    created_by: UserSpec = dict
+    updated_by: UserSpec = dict
 
-
-class MetaArtifactRetrieveSpec(MetaArtifactBaseSpec):
-    associating_type: MetaArtifactAssociatingTypeChoices
-    associating_id: UUID4
-    object_type: MetaArtifactObjectTypeChoices
-    name: str
+    @classmethod
+    def perform_extra_serialization(cls, mapping, obj):
+        if obj.created_by:
+            mapping["created_by"] = UserSpec.serialize(obj.created_by)
+        if obj.updated_by:
+            mapping["updated_by"] = UserSpec.serialize(obj.updated_by)
 
 
 class MetaArtifactCreateSpec(MetaArtifactBaseSpec):

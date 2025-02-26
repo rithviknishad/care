@@ -15,6 +15,7 @@ from care.emr.models.meta_artifact import MetaArtifact
 from care.emr.resources.meta_artifact.spec import (
     MetaArtifactAssociatingTypeChoices,
     MetaArtifactCreateSpec,
+    MetaArtifactReadSpec,
     MetaArtifactUpdateSpec,
 )
 from care.security.authorization import AuthorizationController
@@ -71,7 +72,7 @@ class MetaArtifactViewSet(
 ):
     database_model = MetaArtifact
     pydantic_model = MetaArtifactCreateSpec
-    pydantic_retrieve_model = MetaArtifactCreateSpec
+    pydantic_read_model = MetaArtifactReadSpec
     pydantic_update_model = MetaArtifactUpdateSpec
     fitlerset_class = MetaArtifactFilter
     filter_backends = (filters.DjangoFilterBackend,)
