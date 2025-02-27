@@ -28,7 +28,7 @@ class MetaArtifactTypeFilter(filters.CharFilter):
         return qs
 
 
-class MetaArtifactFilter(filters.FilterSet):
+class MetaArtifactFilters(filters.FilterSet):
     name = filters.CharFilter(field_name="name", lookup_expr="icontains")
     object_type = MetaArtifactTypeFilter()
 
@@ -74,7 +74,7 @@ class MetaArtifactViewSet(
     pydantic_model = MetaArtifactCreateSpec
     pydantic_read_model = MetaArtifactReadSpec
     pydantic_update_model = MetaArtifactUpdateSpec
-    fitlerset_class = MetaArtifactFilter
+    filterset_class = MetaArtifactFilters
     filter_backends = (filters.DjangoFilterBackend,)
 
     def authorize_create(self, instance):
