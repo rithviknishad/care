@@ -99,13 +99,24 @@ class MetaArtifactViewSet(
                 "associating_type" not in self.request.GET
                 and "associating_id" not in self.request.GET
             ):
-                raise PermissionError("Not enough information to filter files")
+                raise PermissionDenied(
+                    "Not enough information to filter meta artifacts"
+                )
             meta_artifact_authorizer(
                 self.request.user,
                 self.request.GET.get("associating_type"),
                 self.request.GET.get("associating_id"),
                 "read",
             )
+            return (
+                super()
+                .get_queryset()
+                .filter(
+                    associating_type=self.request.GET.get("associating_type"),
+                    associating_external_id=self.request.GET.get("associating_id"),
+                )
+            )
+
         obj = get_object_or_404(MetaArtifact, external_id=self.kwargs["external_id"])
         meta_artifact_authorizer(
             self.request.user,
