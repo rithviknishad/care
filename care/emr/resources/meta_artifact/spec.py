@@ -21,7 +21,7 @@ class MetaArtifactBaseSpec(EMRResource):
     __model__ = MetaArtifact
 
     id: UUID4 | None = None
-    object_value: dict | list | None = None
+    object_value: dict | list
 
 
 class MetaArtifactUpdateSpec(MetaArtifactBaseSpec):
