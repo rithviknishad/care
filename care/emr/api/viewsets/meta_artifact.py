@@ -101,7 +101,7 @@ class MetaArtifactViewSet(
                 and "associating_id" not in self.request.GET
             ):
                 raise PermissionDenied(
-                    "Not enough information to filter meta artifacts"
+                    "'associating_type' and 'associating_id' query params are required to list meta artifacts"
                 )
             meta_artifact_authorizer(
                 self.request.user,
