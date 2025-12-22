@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.core.management.base import BaseCommand
@@ -18,27 +19,35 @@ class Command(BaseCommand):
     help = "Script to import inventory items."
 
     def add_arguments(self, parser):
-        parser.add_argument("--data_dir", help="Data directory")
+        parser.add_argument(
+            "source_dir",
+            type=str,
+            help="Directory which contains all the transformed data JSONs",
+        )
 
     def handle(self, *args, **options):
-        super().__init__(*args, **options)
-        return
-        data_dir = self.data_dir
-        print(data_dir)
-        # TODO: read all the json files
-        return
+        source_dir = options["source_dir"]
+
+        with open(source_dir + "/resource_category.json") as f:
+            resource_category_datapoints = json.load(f)
+        with open(source_dir + "/product_knowledge.json") as f:
+            product_knowledge_datapoints = json.load(f)
+        with open(source_dir + "/charge_item_definition.json") as f:
+            charge_item_definition_datapoints = json.load(f)
+        with open(source_dir + "/product.json") as f:
+            inventory_item_datapoints = json.load(f)
 
         resource_category_instances = self.validate_datapoints(
             ResourceCategoryWriteSpec,
-            [],  # TODO: replace this
+            resource_category_datapoints,
         )
         product_knowledge_instances = self.validate_datapoints(
             ProductKnowledgeWriteSpec,
-            [],  # TODO: replace this
+            product_knowledge_datapoints,
         )
         charge_item_definition_instances = self.validate_datapoints(
             ChargeItemDefinitionWriteSpec,
-            [],  # TODO: replace this
+            charge_item_definition_datapoints,
         )
 
         with transaction.atomic():
