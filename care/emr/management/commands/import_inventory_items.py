@@ -24,6 +24,7 @@ from care.emr.resources.inventory.product_knowledge.spec import (
 )
 from care.emr.resources.inventory.supply_delivery.delivery_order import (
     SupplyDeliveryOrderWriteSpec,
+    SupplyDeliveryOrderStatusOptions,
 )
 from care.emr.resources.inventory.supply_delivery.spec import SupplyDeliveryWriteSpec
 from care.emr.resources.resource_category.spec import ResourceCategoryWriteSpec
@@ -50,35 +51,39 @@ class Command(BaseCommand):
 
         logger.info("Importing inventory items from %s", source_dir)
         with transaction.atomic():
-            # with open(source_dir + "/resource-categories.json") as f:
-            #     logger.info("Importing resource categories")
-            #     self.save_resource_categories(json.load(f))
-            #     logger.info("Resource categories imported successfully")
-            #
-            # with open(source_dir + "/product-knowledges.json") as f:
-            #     logger.info("Importing product knowledges")
-            #     self.save_product_knowledges(json.load(f))
-            #     logger.info("Product knowledges imported successfully")
-            #
-            # with open(source_dir + "/charge-item-definitions.json") as f:
-            #     logger.info("Importing charge item definitions")
-            #     self.save_charge_item_definitions(json.load(f))
-            #     logger.info("Charge item definitions imported successfully")
+            with open(source_dir + "/resource-categories.json") as f:
+                logger.info("Importing resource categories")
+                self.save_resource_categories(json.load(f))
+                logger.info("Resource categories imported successfully")
+
+            with open(source_dir + "/product-knowledges.json") as f:
+                logger.info("Importing product knowledges")
+                self.save_product_knowledges(json.load(f))
+                logger.info("Product knowledges imported successfully")
+
+            with open(source_dir + "/charge-item-definitions.json") as f:
+                logger.info("Importing charge item definitions")
+                self.save_charge_item_definitions(json.load(f))
+                logger.info("Charge item definitions imported successfully")
 
             with open(source_dir + "/products.json") as f:
                 logger.info("Importing products")
                 self.save_products(json.load(f))
                 logger.info("Products imported successfully")
 
-            # with open(source_dir + "/delivery-orders.json") as f:
-            #     logger.info("Importing delivery orders")
-            #     self.save_delivery_orders(json.load(f))
-            #     logger.info("Delivery orders imported successfully")
-            #
-            # with open(source_dir + "/supply-deliveries.json") as f:
-            #     logger.info("Importing supply deliveries")
-            #     self.save_supply_deliveries(json.load(f))
-            #     logger.info("Supply deliveries imported successfully")
+            with open(source_dir + "/delivery-orders.json") as f:
+                logger.info("Importing delivery orders")
+                orders = self.save_delivery_orders(json.load(f))
+                logger.info("Delivery orders imported successfully")
+
+            with open(source_dir + "/supply-deliveries.json") as f:
+                logger.info("Importing supply deliveries")
+                self.save_supply_deliveries(json.load(f))
+                logger.info("Supply deliveries imported successfully")
+
+            logger.info("Completing all pending delivery orders")
+            self.complete_all_delivery_orders(orders)
+            logger.info("All pending delivery orders completed successfully")
 
     def save_resource_categories(self, datapoints: list):
         bulk = []
@@ -145,22 +150,23 @@ class Command(BaseCommand):
             instance = validated.de_serialize()
             bulk.append(instance)
         DeliveryOrder.objects.bulk_create(bulk, batch_size=500)
+        return bulk
 
     def save_supply_deliveries(self, datapoints: list[dict]):
         for datapoint in datapoints:
             product = get_object_or_404(
                 Product,
                 product_knowledge__slug=datapoint.pop(
-                    "$supplied_item__product_knowledge__slug"
+                    "$supplied_item__product_knowledge"
                 ),
                 charge_item_definition__slug=datapoint.pop(
-                    "$supplied_item__charge_item_definition__slug"
+                    "$supplied_item__charge_item_definition"
                 ),
             )
-            order = get_object_or_404(
-                DeliveryOrder,
+            order = DeliveryOrder.objects.filter(
                 destination__external_id=datapoint.pop("$order__destination"),
-            )
+                status="pending",
+            ).first()
             datapoint["supplied_item"] = product.external_id
             datapoint["order"] = order.external_id
             validated = SupplyDeliveryWriteSpec.model_validate(datapoint)
@@ -177,3 +183,8 @@ class Command(BaseCommand):
                 )
             if instance.order.origin:
                 sync_inventory_item(inventory_item=instance.supplied_inventory_item)
+
+    def complete_all_delivery_orders(self, orders: list[DeliveryOrder]):
+        for order in orders:
+            order.status = SupplyDeliveryOrderStatusOptions.completed
+            order.save()
