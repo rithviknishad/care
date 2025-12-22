@@ -17,10 +17,16 @@ class Command(BaseCommand):
 
     help = "Script to import inventory items."
 
+    def add_arguments(self, parser):
+        parser.add_argument("--data_dir", help="Data directory")
+
     def handle(self, *args, **options):
         super().__init__(*args, **options)
-        data_dir = args[1]
+        return
+        data_dir = self.data_dir
+        print(data_dir)
         # TODO: read all the json files
+        return
 
         resource_category_instances = self.validate_datapoints(
             ResourceCategoryWriteSpec,
