@@ -86,7 +86,6 @@ class Command(BaseCommand):
             logger.info("All pending delivery orders completed successfully")
 
     def save_resource_categories(self, datapoints: list):
-        bulk = []
         for datapoint in datapoints:
             facility_external_id = datapoint.pop("$facility")
             validated = ResourceCategoryWriteSpec.model_validate(datapoint)
@@ -97,11 +96,9 @@ class Command(BaseCommand):
             instance.slug = ResourceCategory.calculate_slug_from_facility(
                 instance.facility.external_id, instance.slug
             )
-            bulk.append(instance)
-        ResourceCategory.objects.bulk_create(bulk, batch_size=500)
+            instance.save()
 
     def save_product_knowledges(self, datapoints: list):
-        bulk = []
         for datapoint in datapoints:
             validated = ProductKnowledgeWriteSpec.model_validate(datapoint)
             instance = validated.de_serialize()
@@ -113,11 +110,9 @@ class Command(BaseCommand):
                 instance.slug = ProductKnowledge.calculate_slug_from_instance(
                     instance.slug
                 )
-            bulk.append(instance)
-        ProductKnowledge.objects.bulk_create(bulk, batch_size=500)
+            instance.save()
 
     def save_charge_item_definitions(self, datapoints: list):
-        bulk = []
         for datapoint in datapoints:
             facility_external_id = datapoint.pop("$facility")
             validated = ChargeItemDefinitionWriteSpec.model_validate(datapoint)
@@ -128,11 +123,9 @@ class Command(BaseCommand):
             instance.slug = ChargeItemDefinition.calculate_slug_from_facility(
                 instance.facility.external_id, instance.slug
             )
-            bulk.append(instance)
-        ChargeItemDefinition.objects.bulk_create(bulk, batch_size=500)
+            instance.save()
 
     def save_products(self, datapoints: list):
-        bulk = []
         for datapoint in datapoints:
             facility_external_id = datapoint.pop("$facility")
             validated = ProductWriteSpec.model_validate(datapoint)
@@ -140,8 +133,7 @@ class Command(BaseCommand):
             instance.facility = get_object_or_404(
                 Facility, external_id=facility_external_id
             )
-            bulk.append(instance)
-        Product.objects.bulk_create(bulk, batch_size=500)
+            instance.save()
 
     def save_delivery_orders(self, datapoints: list):
         bulk = []
@@ -149,7 +141,7 @@ class Command(BaseCommand):
             validated = SupplyDeliveryOrderWriteSpec.model_validate(datapoint)
             instance = validated.de_serialize()
             bulk.append(instance)
-        DeliveryOrder.objects.bulk_create(bulk, batch_size=500)
+            instance.save()
         return bulk
 
     def save_supply_deliveries(self, datapoints: list[dict]):
