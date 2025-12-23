@@ -96,6 +96,8 @@ class Command(BaseCommand):
             instance.slug = ResourceCategory.calculate_slug_from_facility(
                 instance.facility.external_id, instance.slug
             )
+            if ResourceCategory.objects.filter(slug=instance.slug).exists():
+                continue
             instance.save()
 
     def save_product_knowledges(self, datapoints: list):
@@ -110,6 +112,8 @@ class Command(BaseCommand):
                 instance.slug = ProductKnowledge.calculate_slug_from_instance(
                     instance.slug
                 )
+            if ProductKnowledge.objects.filter(slug=instance.slug).exists():
+                continue
             instance.save()
 
     def save_charge_item_definitions(self, datapoints: list):
@@ -123,6 +127,8 @@ class Command(BaseCommand):
             instance.slug = ChargeItemDefinition.calculate_slug_from_facility(
                 instance.facility.external_id, instance.slug
             )
+            if ChargeItemDefinition.objects.filter(slug=instance.slug).exists():
+                continue
             instance.save()
 
     def save_products(self, datapoints: list):
@@ -133,6 +139,12 @@ class Command(BaseCommand):
             instance.facility = get_object_or_404(
                 Facility, external_id=facility_external_id
             )
+            if Product.objects.filter(
+                facility=instance.facility,
+                product_knowledge__slug=instance.product_knowledge.slug,
+                charge_item_definition__slug=instance.charge_item_definition.slug,
+            ).exists():
+                continue
             instance.save()
 
     def save_delivery_orders(self, datapoints: list):
