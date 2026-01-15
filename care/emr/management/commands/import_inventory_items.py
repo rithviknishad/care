@@ -101,7 +101,8 @@ class Command(BaseCommand):
             instance.save()
 
     def save_product_knowledges(self, datapoints: list):
-        for datapoint in datapoints:
+        for idx, datapoint in enumerate(datapoints):
+            logger.info(f"Creating PK: {idx + 1} of {len(datapoints)}")
             validated = ProductKnowledgeWriteSpec.model_validate(datapoint)
             instance = validated.de_serialize()
             if instance.facility:
@@ -117,7 +118,8 @@ class Command(BaseCommand):
             instance.save()
 
     def save_charge_item_definitions(self, datapoints: list):
-        for datapoint in datapoints:
+        for idx, datapoint in enumerate(datapoints):
+            logger.info(f"Creating CID: {idx + 1} of {len(datapoints)}")
             facility_external_id = datapoint.pop("$facility")
             validated = ChargeItemDefinitionWriteSpec.model_validate(datapoint)
             instance = validated.de_serialize()
@@ -132,7 +134,8 @@ class Command(BaseCommand):
             instance.save()
 
     def save_products(self, datapoints: list):
-        for datapoint in datapoints:
+        for idx, datapoint in enumerate(datapoints):
+            logger.info(f"Creating Product: {idx + 1} of {len(datapoints)}")
             facility_external_id = datapoint.pop("$facility")
             validated = ProductWriteSpec.model_validate(datapoint)
             instance = validated.de_serialize()
@@ -149,7 +152,8 @@ class Command(BaseCommand):
 
     def save_delivery_orders(self, datapoints: list):
         bulk = []
-        for datapoint in datapoints:
+        for idx, datapoint in enumerate(datapoints):
+            logger.info(f"Creating Delivery Order: {idx + 1} of {len(datapoints)}")
             validated = SupplyDeliveryOrderWriteSpec.model_validate(datapoint)
             instance = validated.de_serialize()
             bulk.append(instance)
@@ -157,7 +161,8 @@ class Command(BaseCommand):
         return bulk
 
     def save_supply_deliveries(self, datapoints: list[dict]):
-        for datapoint in datapoints:
+        for idx, datapoint in enumerate(datapoints):
+            logger.info(f"Creating Supply Delivery: {idx + 1} of {len(datapoints)}")
             product = get_object_or_404(
                 Product,
                 product_knowledge__slug=datapoint.pop(
@@ -189,6 +194,7 @@ class Command(BaseCommand):
                 sync_inventory_item(inventory_item=instance.supplied_inventory_item)
 
     def complete_all_delivery_orders(self, orders: list[DeliveryOrder]):
-        for order in orders:
+        for idx, order in enumerate(orders):
+            logger.info(f"Completing Delivery Order: {idx + 1} of {len(orders)}")
             order.status = SupplyDeliveryOrderStatusOptions.completed
             order.save()
