@@ -371,6 +371,7 @@ REST_FRAMEWORK = {
         "config.authentication.CustomJWTAuthentication",
         "config.authentication.CustomBasicAuthentication",
         "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -685,9 +686,6 @@ SNOWSTORM_DEPLOYMENT_URL = env(
     "SNOWSTORM_DEPLOYMENT_URL", default="http://165.22.211.144/fhir"
 )
 
-# Path to the typst binary, see scripts/install_typst.sh
-TYPST_BIN = env("TYPST_BIN", default="typst")
-
 DJANGO_REST_MULTITOKENAUTH_REQUIRE_USABLE_PASSWORD = False
 
 SMS_BACKEND = "care.utils.sms.backend.sns.SnsBackend"
@@ -712,3 +710,9 @@ TOTP_DISABLED_EMAIL_TEMPLATE_PATH = env(
 
 # Cleanup incomplete file uploads, set to 0 to disable
 FILE_UPLOAD_EXPIRY_HOURS = env.int("FILE_UPLOAD_EXPIRY_HOURS", default=24)
+
+ACCOUNTING_PRECISION = env.int("ACCOUNTING_PRECISION", default=2)
+
+ACCOUNTING_ROUNDING_METHOD = env(
+    "ACCOUNTING_ROUNDING_METHOD", default="care.utils.rounding.Rounding05Up"
+)
