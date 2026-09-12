@@ -56,6 +56,10 @@ def care_fixture_context(base_cls: type[CareFixtureBase] = CareFixtureBase):
                 "care.emr.api.viewsets.questionnaire.questionnaire.QuestionnaireLock",
                 _NoOpLock,
             ),
+            patch(
+                "care.emr.api.viewsets.encounter.FacilityEncounterCreateLock",
+                _NoOpLock,
+            ),
             warnings.catch_warnings(),
         ):
             warnings.filterwarnings(
