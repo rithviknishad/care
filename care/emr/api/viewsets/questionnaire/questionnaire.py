@@ -3,6 +3,7 @@ from django.db.models import Q
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema
 from pydantic import UUID4, BaseModel
+from pydantic.experimental.missing_sentinel import MISSING
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -64,6 +65,14 @@ from care.security.authorization import AuthorizationController
 from care.utils.filters.multiselect import MultiSelectFilter
 from care.utils.lock import ObjectLocked
 from care.utils.shortcuts import get_object_or_404
+
+
+def get_provided_actions(obj):
+    """Return the actions on the object, treating the MISSING sentinel as empty."""
+    actions = getattr(obj, "actions", None)
+    if not actions or actions is MISSING:
+        return []
+    return actions
 
 
 class ParentRevisionFilter(filters.UUIDFilter):
@@ -179,12 +188,11 @@ class QuestionnaireViewSet(EMRModelViewSet, EMRFavoritesMixin):
         ):
             raise PermissionDenied("Permission Denied to create user questionnaire")
 
-        if getattr(request_obj, "actions", None):
-            for action in request_obj.actions:
-                ActionEvaluator.authorize(self.request, self.request.user, action)
-        elif getattr(model_instance, "actions", None):
-            for action in model_instance.actions:
-                ActionEvaluator.authorize(self.request, self.request.user, action)
+        actions = get_provided_actions(request_obj) or get_provided_actions(
+            model_instance
+        )
+        for action_config in actions:
+            ActionEvaluator.authorize(self.request, self.request.user, action_config)
 
     def authorize_create(self, instance):
         if (
@@ -228,9 +236,8 @@ class QuestionnaireViewSet(EMRModelViewSet, EMRFavoritesMixin):
                 read_only=False,
             ):
                 raise PermissionDenied("Permission Denied to create user questionnaire")
-        if getattr(instance, "actions", None):
-            for action in instance.actions:
-                ActionEvaluator.authorize(self.request, self.request.user, action)
+        for action_config in get_provided_actions(instance):
+            ActionEvaluator.authorize(self.request, self.request.user, action_config)
 
     def authorize_destroy(self, instance):
         self.authorize_update(self.request, instance)
