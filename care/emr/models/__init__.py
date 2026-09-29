@@ -35,3 +35,5 @@ from .valueset import *  # noqa F403
 from .action import *  # noqa F403
 from .immunisation import *  # noqa F403
 from .workspace import *  # noqa F403
+from .report.template import *  # noqa F403
+from .report.report_upload import *  # noqa F403
