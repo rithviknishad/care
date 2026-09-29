@@ -33,3 +33,5 @@ from .supply_request import *  # noqa F403
 from .tag_config import *  # noqa F403
 from .valueset import *  # noqa F403
 from .action import *  # noqa F403
+from .report.template import *  # noqa F403
+from .report.report_upload import *  # noqa F403
