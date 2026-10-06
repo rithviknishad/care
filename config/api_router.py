@@ -3,6 +3,15 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter, SimpleRouter
 from rest_framework_nested.routers import NestedSimpleRouter
 
+from care.abdm.api.viewsets.abha import AbhaViewSet
+from care.abdm.api.viewsets.hip import (
+    AbdmCareContextViewSet,
+    AbdmExchangeViewSet,
+    AbdmFacilityViewSet,
+    AbdmPatientViewSet,
+)
+from care.abdm.api.viewsets.hiu import AbdmConsentRequestViewSet
+from care.abdm.api.viewsets.registry import AbdmRegistryViewSet
 from care.emr.api.otp_viewsets.login import OTPLoginView
 from care.emr.api.otp_viewsets.patient import PatientOTPView
 from care.emr.api.otp_viewsets.slot import OTPSlotViewSet
@@ -128,6 +137,20 @@ router.register(
 )
 
 router.register("otp/patient", PatientOTPView, basename="otp-patient")
+
+router.register("abdm/abha", AbhaViewSet, basename="abdm-abha")
+router.register("abdm/facility", AbdmFacilityViewSet, basename="abdm-facility")
+router.register(
+    "abdm/care_context", AbdmCareContextViewSet, basename="abdm-care-context"
+)
+router.register("abdm/exchange", AbdmExchangeViewSet, basename="abdm-exchange")
+router.register("abdm/patient", AbdmPatientViewSet, basename="abdm-patient")
+router.register(
+    "abdm/consent_request",
+    AbdmConsentRequestViewSet,
+    basename="abdm-consent-request",
+)
+router.register("abdm/registry", AbdmRegistryViewSet, basename="abdm-registry")
 
 router.register("otp/slots", OTPSlotViewSet, basename="otp-slots")
 

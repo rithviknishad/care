@@ -10,6 +10,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from care.abdm.api.callbacks import AbdmCallbackView, AbdmDataPushView
 from care.users.api.viewsets.change_password import ChangePasswordView
 from care.users.reset_password_views import (
     ResetPasswordCheck,
@@ -63,6 +64,17 @@ urlpatterns = [
         name="change_password_view",
     ),
     path("api/v1/", include(api_router.urlpatterns)),
+    # ABDM appends its callback paths to the bridge URL, registered as <host>/abdm
+    path(
+        "abdm/api/v3/<path:callback>",
+        AbdmCallbackView.as_view(),
+        name="abdm-callback",
+    ),
+    path(
+        "abdm/data-push/<str:token>/",
+        AbdmDataPushView.as_view(),
+        name="abdm-data-push",
+    ),
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
 

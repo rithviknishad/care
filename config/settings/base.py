@@ -137,6 +137,7 @@ LOCAL_APPS = [
     "care.users",
     "care.audit_log",
     "care.emr",
+    "care.abdm",
 ]
 
 PLUGIN_APPS = manager.get_apps()
@@ -740,3 +741,37 @@ TOTP_DISABLED_EMAIL_TEMPLATE_PATH = env(
 
 # Cleanup incomplete file uploads, set to 0 to disable
 FILE_UPLOAD_EXPIRY_HOURS = env.int("FILE_UPLOAD_EXPIRY_HOURS", default=24)
+
+# ABDM (Ayushman Bharat Digital Mission)
+# ------------------------------------------------------------------------------
+ABDM_ENABLED = env.bool("ABDM_ENABLED", default=False)
+ABDM_GATEWAY_URL = env("ABDM_GATEWAY_URL", default="https://dev.abdm.gov.in")
+ABDM_ABHA_URL = env("ABDM_ABHA_URL", default="https://abhasbx.abdm.gov.in/abha/api")
+ABDM_CM_ID = env("ABDM_CM_ID", default="sbx")
+ABDM_CLIENT_ID = env("ABDM_CLIENT_ID", default="")
+ABDM_CLIENT_SECRET = env("ABDM_CLIENT_SECRET", default="")
+ABDM_REQUEST_TIMEOUT = env.int("ABDM_REQUEST_TIMEOUT", default=30)
+# Demographic auth create route is available to government integrators only
+ABDM_DEMO_AUTH_ENABLED = env.bool("ABDM_DEMO_AUTH_ENABLED", default=False)
+ABDM_FACE_AUTH_ENABLED = env.bool("ABDM_FACE_AUTH_ENABLED", default=False)
+ABDM_ABHA_NUMBER_IDENTIFIER_SYSTEM = env(
+    "ABDM_ABHA_NUMBER_IDENTIFIER_SYSTEM", default="https://healthid.abdm.gov.in"
+)
+ABDM_ABHA_ADDRESS_IDENTIFIER_SYSTEM = env(
+    "ABDM_ABHA_ADDRESS_IDENTIFIER_SYSTEM", default="https://abha.abdm.gov.in"
+)
+# Lifetime of a registration journey's server-side state (txnId, user tokens)
+ABDM_JOURNEY_TTL_SECONDS = env.int("ABDM_JOURNEY_TTL_SECONDS", default=1800)
+# How long a fetched public certificate is trusted before it is re-read
+ABDM_CERTIFICATE_TTL_SECONDS = env.int("ABDM_CERTIFICATE_TTL_SECONDS", default=3600)
+# Public origin that serves /abdm/ (the bridge URL without its /abdm suffix);
+# providers push requested records to a URL under it
+ABDM_CALLBACK_BASE_URL = env("ABDM_CALLBACK_BASE_URL", default="")
+# The facility and professional registries (HFR, HPR); same token as the gateway
+ABDM_REGISTRY_URL = env(
+    "ABDM_REGISTRY_URL", default="https://apihspsbx.abdm.gov.in/v4/int"
+)
+# Identifier system for a practitioner's HPR ID number (as in the NRCES Practitioner example)
+ABDM_HPR_IDENTIFIER_SYSTEM = env(
+    "ABDM_HPR_IDENTIFIER_SYSTEM", default="https://doctor.ndhm.gov.in"
+)
